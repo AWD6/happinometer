@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#f4eeff" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Happinometer" />
+<title>Happinometer · ประเมินความพึงพอใจผู้ป่วย</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop offset='0' stop-color='%23ff6b6b'/%3E%3Cstop offset='.5' stop-color='%23ffcf3a'/%3E%3Cstop offset='1' stop-color='%232fd4a7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='%23fff'/%3E%3Cpath d='M12 40a20 20 0 0 1 40 0' stroke='url(%23g)' stroke-width='8' stroke-linecap='round' fill='none'/%3E%3Cpath d='M32 40 L44 25' stroke='%233a2a4f' stroke-width='4.5' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='40' r='5' fill='%233a2a4f'/%3E%3Cpath d='M22 49q10 7 20 0' stroke='%23ff6fa5' stroke-width='4' stroke-linecap='round' fill='none'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&family=Mitr:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --ink:#2b2350; --ink2:#5b5480; --muted:#9a94b8; --line:rgba(124,108,255,.14);
+  --pink:#ff6fa5; --violet:#7c6cff; --mint:#2fd4a7; --sun:#ffc93c; --sky:#5aa9ff;
+  --card:rgba(255,255,255,.76); --r:26px;
+  --shadow:0 1px 0 rgba(255,255,255,.95) inset,0 18px 40px -20px rgba(76,56,170,.38),0 3px 10px -5px rgba(76,56,170,.14);
+  --font:'IBM Plex Sans Thai Looped',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --display:'Mitr',var(--font);
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{font-family:var(--font);color:var(--ink);background:#f7f2ff;overflow-x:hidden;-webkit-font-smoothing:antialiased;font-size:15px}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+[hidden]{display:none!important}
+
+/* ---------- background ---------- */
+.bg{position:fixed;inset:0;z-index:-1;background:linear-gradient(165deg,#fff0f6 0%,#f2edff 48%,#e7fbf4 100%);overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(55px);opacity:.55;animation:float 18s ease-in-out infinite}
+.b1{width:340px;height:340px;background:#ffb3d1;top:-100px;left:-90px}
+.b2{width:300px;height:300px;background:#bcb0ff;top:32%;right:-130px;animation-delay:-6s}
+.b3{width:340px;height:340px;background:#9ff0d6;bottom:-140px;left:8%;animation-delay:-12s}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-24px) scale(1.08)}66%{transform:translate(-22px,26px) scale(.94)}}
+
+/* ---------- shell ---------- */
+.shell{max-width:520px;margin:0 auto;min-height:100vh;min-height:100dvh;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px calc(104px + var(--safe-b));position:relative;transition:max-width .45s ease}
+body.wide .shell{max-width:1140px}
+body.kiosk .shell{padding-bottom:calc(24px + var(--safe-b))}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand .logo{width:42px;height:42px;flex:none;border-radius:14px;background:linear-gradient(145deg,#fff,#f1ecff);box-shadow:var(--shadow);display:grid;place-items:center}
+.wordmark{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.2px;line-height:1;background:linear-gradient(100deg,#ff6fa5 0%,#a36bff 45%,#4f7dff 75%,#22c7a0 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand small{display:block;font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.2px}
+.room-chip{display:flex;align-items:center;gap:8px;padding:7px 12px 7px 9px;border-radius:999px;background:rgba(255,255,255,.8);box-shadow:var(--shadow);max-width:55%;transition:transform .15s}
+.room-chip:active{transform:scale(.96)}
+.room-chip .ic{color:var(--pink)}
+.room-chip b{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sync-dot{width:9px;height:9px;border-radius:50%;background:#c9c3e4;flex:none;box-shadow:0 0 0 3px rgba(201,195,228,.25)}
+.sync-dot.ok{background:#22c58b;box-shadow:0 0 0 3px rgba(34,197,139,.2)}
+.sync-dot.pending,.sync-dot.syncing{background:#ffb020;box-shadow:0 0 0 3px rgba(255,176,32,.22);animation:pulse 1.2s infinite}
+.sync-dot.error{background:#ff5a6a;box-shadow:0 0 0 3px rgba(255,90,106,.2)}
+body.kiosk .room-chip{pointer-events:none;opacity:.85}
+
+/* ---------- generic ---------- */
+.card{background:var(--card);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border:1px solid rgba(255,255,255,.88);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;position:relative}
+.card-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 12px;font-family:var(--display);font-weight:500;font-size:16px}
+.card-title .ic{color:var(--violet)}
+.card-title span.t{display:flex;align-items:center;gap:8px}
+.muted{color:var(--muted)}
+.ic{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.grad{background:linear-gradient(100deg,#ff6fa5,#8b6cff 60%,#3fb8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:18px;padding:12px 18px;font-weight:600;transition:transform .12s ease,box-shadow .2s,filter .2s;user-select:none}
+.btn:active{transform:translateY(2px) scale(.98)}
+.btn-primary{color:#fff;background:linear-gradient(135deg,#ff7eb3 0%,#a26cff 55%,#6f7bff 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),inset 0 -4px 0 rgba(40,0,90,.14),0 14px 26px -10px rgba(124,108,255,.7)}
+.btn-primary:disabled{filter:grayscale(.7) opacity(.5);box-shadow:none;cursor:not-allowed}
+.btn-soft{background:#fff;color:var(--ink);box-shadow:inset 0 -3px 0 rgba(124,108,255,.1),0 8px 18px -12px rgba(76,56,170,.45)}
+.btn-ghost{background:rgba(124,108,255,.08);color:var(--violet)}
+.btn-danger{background:#fff0f2;color:#e5484d}
+.btn-sm{padding:8px 12px;border-radius:14px;font-size:13px}
+.btn-block{width:100%}
+.icon-btn{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:rgba(255,255,255,.85);box-shadow:var(--shadow);color:var(--ink2);transition:transform .12s}
+.icon-btn:active{transform:scale(.92)}
+
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chips.scroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -4px;padding:2px 4px 4px}
+.chips.scroll::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:8px 14px;border-radius:999px;background:#fff;font-size:13.5px;font-weight:500;color:var(--ink2);box-shadow:0 1px 0 rgba(255,255,255,1) inset,0 6px 14px -10px rgba(76,56,170,.5);border:1.5px solid rgba(124,108,255,.1);transition:all .18s}
+.chip:active{transform:scale(.95)}
+.chip.on{color:#fff;background:linear-gradient(135deg,#ff7eb3,#8b6cff);border-color:transparent;box-shadow:0 8px 16px -8px rgba(139,108,255,.8)}
+.chip small{opacity:.7;font-weight:400;margin-left:4px}
+
+input.inp,select.inp{width:100%;padding:12px 14px;border-radius:16px;border:1.5px solid rgba(124,108,255,.16);background:#fff;outline:none;transition:border .2s,box-shadow .2s;font-size:14.5px}
+input.inp:focus,select.inp:focus{border-color:var(--violet);box-shadow:0 0 0 4px rgba(124,108,255,.14)}
+select.inp{background-color:#fff;cursor:pointer;padding:11px 12px}
+label.lbl{display:block;font-size:12.5px;color:var(--muted);margin:0 0 6px 2px;font-weight:500}
+
+.enter{animation:enter .45s cubic-bezier(.2,.8,.2,1) both}
+@keyframes enter{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+/* ---------- tab bar ---------- */
+.tabbar{position:fixed;left:50%;bottom:calc(14px + var(--safe-b));transform:translateX(-50%);display:flex;gap:4px;padding:6px;border-radius:26px;background:rgba(255,255,255,.82);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);box-shadow:0 1px 0 #fff inset,0 18px 40px -14px rgba(76,56,170,.45);z-index:20;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .3s}
+body.kiosk .tabbar{transform:translate(-50%,140%);opacity:0;pointer-events:none}
+.tab{display:flex;align-items:center;gap:7px;padding:11px 16px;border-radius:20px;color:var(--muted);font-weight:600;font-size:13.5px;transition:all .25s}
+.tab .lab{max-width:0;overflow:hidden;white-space:nowrap;transition:max-width .3s}
+.tab.on{color:#fff;background:linear-gradient(135deg,#ff7eb3,#8b6cff);box-shadow:0 10px 18px -8px rgba(139,108,255,.85)}
+.tab.on .lab{max-width:90px}
+
+/* ---------- home ---------- */
+.hero{padding:18px 18px 16px;overflow:hidden;text-align:center}
+.hero::before{content:"";position:absolute;inset:-40% -20% auto;height:70%;background:radial-gradient(closest-side,rgba(255,255,255,.9),transparent);pointer-events:none}
+.hero-top{display:flex;justify-content:space-between;align-items:center;position:relative;font-size:12.5px;color:var(--muted)}
+.gauge-wrap{width:min(270px,78%);margin:6px auto -4px;position:relative}
+.gauge{width:100%;height:auto;overflow:visible;display:block}
+.gauge .needle{transform-origin:120px 122px;transition:transform 1.3s cubic-bezier(.34,1.56,.64,1)}
+.gauge .needle.idle{animation:sway 4.5s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-58deg)}50%{transform:rotate(62deg)}}
+.gauge .gface{transform-box:fill-box;transform-origin:center;animation:bob 3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.hero-title{font-family:var(--display);font-weight:500;font-size:25px;line-height:1.35;margin:6px 0 12px;position:relative}
+.room-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;border-radius:20px;background:linear-gradient(135deg,rgba(255,126,179,.1),rgba(124,108,255,.1));border:1.5px dashed rgba(124,108,255,.28);transition:transform .15s}
+.room-card:active{transform:scale(.98)}
+.room-card .pin{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:#fff;color:var(--pink);box-shadow:0 8px 16px -10px rgba(255,111,165,.8);flex:none}
+.room-card .meta{flex:1;min-width:0}
+.room-card .meta b{display:block;font-family:var(--display);font-weight:500;font-size:18px;line-height:1.2}
+.room-card .meta span{font-size:12.5px;color:var(--ink2)}
+.room-card .chg{font-size:12px;color:var(--violet);font-weight:600;display:flex;align-items:center;gap:2px}
+.mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.mini{padding:10px 6px;border-radius:18px;background:rgba(255,255,255,.75);box-shadow:0 1px 0 #fff inset,0 6px 14px -10px rgba(76,56,170,.4)}
+.mini b{display:block;font-family:var(--display);font-weight:600;font-size:22px;line-height:1.1}
+.mini span{font-size:11.5px;color:var(--muted)}
+.cta{width:100%;margin-top:16px;padding:20px;border-radius:26px;font-size:21px;font-family:var(--display);font-weight:500;position:relative;overflow:hidden}
+.cta::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);animation:shine 3.2s ease-in-out infinite}
+@keyframes shine{0%,55%{left:-60%}100%{left:130%}}
+.cta .ic{width:26px;height:26px;animation:tap 1.6s ease-in-out infinite}
+@keyframes tap{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px) rotate(-6deg)}}
+.hint{text-align:center;font-size:13px;color:var(--muted);margin:10px 0 16px}
+.today-faces{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center}
+.today-faces .tf svg{width:100%;max-width:52px;height:auto;display:block;margin:0 auto 4px}
+.today-faces b{font-family:var(--display);font-weight:500;font-size:16px}
+.banner{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:18px;font-size:13px;line-height:1.5;margin-bottom:12px;background:rgba(255,201,60,.16);border:1px solid rgba(255,190,40,.35);color:#7a5a00}
+.banner .ic{margin-top:1px}
+.banner button{color:var(--violet);font-weight:600;text-decoration:underline}
+
+/* ---------- face svg ---------- */
+.face{display:block;overflow:visible}
+.face .eyes{transform-box:fill-box;transform-origin:center;animation:blink 4.6s infinite}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+.face .tear{animation:tear 1.8s ease-in infinite}
+@keyframes tear{0%{transform:translateY(-3px);opacity:0}30%{opacity:1}100%{transform:translateY(12px);opacity:0}}
+
+/* ---------- survey ---------- */
+.survey{display:flex;flex-direction:column;min-height:calc(100dvh - 120px)}
+.q-head{display:flex;align-items:center;gap:12px}
+.progress{flex:1;height:12px;border-radius:999px;background:rgba(124,108,255,.12);overflow:hidden;box-shadow:inset 0 2px 3px rgba(76,56,170,.12)}
+.progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ff7eb3,#a26cff,#4fb8ff);transition:width .5s cubic-bezier(.2,.8,.2,1);position:relative}
+.progress i::after{content:"";position:absolute;inset:2px 6px auto;height:3px;border-radius:9px;background:rgba(255,255,255,.55)}
+.q-meta{margin:16px 2px 4px;font-size:13px;color:var(--muted);display:flex;justify-content:space-between}
+.q-meta b{color:var(--violet);font-weight:600}
+.q-title{font-family:var(--display);font-weight:500;font-size:27px;line-height:1.35;margin:4px 2px 18px}
+.q-title em{font-style:normal;background:linear-gradient(100deg,#ff6fa5,#8b6cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.q-body{flex:1}
+.in-r{animation:inR .42s cubic-bezier(.2,.8,.2,1) both}
+.in-l{animation:inL .42s cubic-bezier(.2,.8,.2,1) both}
+@keyframes inR{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+@keyframes inL{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{position:relative;border-radius:24px;padding:16px 14px;text-align:center;background:linear-gradient(180deg,#ffffff,#f9f7ff);border:2.5px solid transparent;box-shadow:0 2px 0 #fff inset,0 -4px 0 rgba(124,108,255,.07) inset,0 14px 26px -16px rgba(76,56,170,.5);transition:transform .16s ease,box-shadow .2s,border-color .2s;animation:pop .45s cubic-bezier(.2,.9,.3,1.3) both}
+.opt:nth-child(2){animation-delay:.05s}.opt:nth-child(3){animation-delay:.1s}.opt:nth-child(4){animation-delay:.15s}.opt:nth-child(5){animation-delay:.2s}
+@keyframes pop{from{opacity:0;transform:translateY(16px) scale(.92)}to{opacity:1;transform:none}}
+.opt:active{transform:scale(.96)}
+.opt.sel{border-color:var(--violet);box-shadow:0 0 0 6px rgba(124,108,255,.14),0 16px 30px -16px rgba(124,108,255,.7);transform:translateY(-3px)}
+.opt .tick{position:absolute;top:10px;right:10px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#ff7eb3,#8b6cff);transform:scale(0);transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
+.opt.sel .tick{transform:scale(1)}
+.opt .tick .ic{width:15px;height:15px;stroke-width:3}
+.opt .t1{display:block;font-family:var(--display);font-weight:500;font-size:20px;margin-top:6px}
+.opt .t2{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.opt .avatar{width:96px;height:96px;display:block;margin:4px auto 0}
+.opt.wide{grid-column:1/-1;display:flex;align-items:center;gap:14px;text-align:left;padding:14px 16px}
+.opt.wide .t1{margin:0;font-size:18px}
+.opt.small{padding:12px}
+.opt.small .t1{font-size:16px;margin:0}
+.age-opt{text-align:left;padding:16px 16px 14px;overflow:hidden}
+.age-opt::before{content:"";position:absolute;right:-24px;top:-24px;width:86px;height:86px;border-radius:50%;background:var(--c);opacity:.16}
+.age-opt .num{font-family:var(--display);font-weight:600;font-size:32px;line-height:1;color:var(--c);display:block}
+.age-opt .num small{font-size:15px;font-weight:500;color:var(--ink2);margin-left:3px}
+.age-opt .t2{font-size:13px;color:var(--ink2);margin-top:6px}
+.age-opt .dotrow{display:flex;gap:3px;margin-top:8px}
+.age-opt .dotrow i{width:6px;height:6px;border-radius:50%;background:var(--c);opacity:.25}
+.age-opt .dotrow i.f{opacity:1}
+.right-opt .ricon{width:58px;height:58px;display:block;margin:2px auto 0;filter:drop-shadow(0 8px 10px rgba(76,56,170,.18))}
+.right-opt .t1{font-size:18px}
+
+/* rating */
+.rate-stage{display:flex;flex-direction:column;align-items:center}
+.rate-hero{width:150px;height:150px;position:relative;margin:0 auto 4px}
+.rate-hero .face{width:100%;height:100%;filter:drop-shadow(0 18px 18px rgba(76,56,170,.22))}
+.rate-hero .face.swap{animation:swap .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes swap{0%{transform:scale(.6) rotate(-10deg)}100%{transform:none}}
+.rate-hero .ph{width:100%;height:100%;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#fff,#efeaff 70%);box-shadow:inset 0 -8px 16px rgba(124,108,255,.12),0 18px 30px -18px rgba(76,56,170,.5);font-family:var(--display);font-size:62px;color:#c5bcf5;animation:bob 2.6s ease-in-out infinite}
+.rate-label{min-height:44px;margin:8px 0 14px;display:flex;align-items:center;justify-content:center}
+.rate-label span{padding:8px 18px;border-radius:999px;font-family:var(--display);font-weight:500;font-size:19px;color:#fff;background:var(--c);box-shadow:0 10px 20px -10px var(--c);animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
+.rate-label .idle{background:none;color:var(--muted);font-family:var(--font);font-size:14.5px;box-shadow:none;animation:none}
+.faces{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:100%;padding:16px 8px 12px;border-radius:28px;background:rgba(255,255,255,.6);box-shadow:inset 0 2px 6px rgba(76,56,170,.08),0 1px 0 #fff}
+.fbtn{display:flex;flex-direction:column;align-items:center;gap:6px;transition:transform .3s cubic-bezier(.3,1.6,.5,1),opacity .25s,filter .25s;animation:pop .5s cubic-bezier(.2,.9,.3,1.3) both}
+.fbtn:nth-child(2){animation-delay:.06s}.fbtn:nth-child(3){animation-delay:.12s}.fbtn:nth-child(4){animation-delay:.18s}.fbtn:nth-child(5){animation-delay:.24s}
+.fbtn .face{width:100%;max-width:64px;height:auto;filter:drop-shadow(0 8px 8px rgba(76,56,170,.2))}
+.fbtn .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:600;font-size:14px;background:#fff;color:var(--ink2);box-shadow:0 4px 10px -4px rgba(76,56,170,.4);transition:all .25s}
+.fbtn:active{transform:scale(.9)}
+.faces.has .fbtn{opacity:.5;filter:saturate(.6)}
+.faces.has .fbtn.sel{opacity:1;filter:none;transform:translateY(-10px) scale(1.16)}
+.fbtn.sel .n{background:var(--c);color:#fff}
+.scale-cap{display:flex;justify-content:space-between;width:100%;padding:8px 6px 0;font-size:12px;color:var(--muted)}
+.submit{margin-top:18px;width:100%;padding:18px;border-radius:24px;font-size:20px;font-family:var(--display);font-weight:500}
+
+/* thanks */
+.thanks{min-height:calc(100dvh - 60px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+.thanks .big{width:180px;height:180px;animation:jump 1.1s cubic-bezier(.3,1.6,.5,1) both}
+.thanks .big .face{width:100%;height:100%;filter:drop-shadow(0 24px 22px rgba(76,56,170,.25))}
+@keyframes jump{0%{transform:scale(.2) translateY(60px);opacity:0}60%{transform:scale(1.08) translateY(-10px);opacity:1}100%{transform:none}}
+.thanks h2{font-family:var(--display);font-weight:500;font-size:30px;margin:18px 0 6px}
+.thanks p{color:var(--ink2);margin:0 0 6px;line-height:1.6;font-size:16px}
+.ring{margin-top:22px;width:62px;height:62px;position:relative;display:grid;place-items:center;font-family:var(--display);font-size:18px;color:var(--violet)}
+.ring svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.ring circle.p{stroke-dasharray:176;stroke-dashoffset:0;animation:ring var(--d,5s) linear forwards}
+@keyframes ring{to{stroke-dashoffset:176}}
+.tap-hint{font-size:13px;color:var(--muted);margin-top:10px}
+
+/* confetti */
+#fx{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+.cf{position:fixed;left:50%;top:40%;line-height:1;will-change:transform;animation:cf 1.8s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes cf{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}45%{transform:translate(calc(-50% + var(--x)*.6),calc(-50% + var(--y))) rotate(calc(var(--r)*.5)) scale(1);opacity:1}100%{transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y) + 420px)) rotate(var(--r)) scale(.9);opacity:0}}
+
+/* ---------- bottom sheet ---------- */
+.sheet-wrap{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center;background:rgba(43,35,80,0);transition:background .3s}
+.sheet-wrap.open{background:rgba(43,35,80,.35)}
+.sheet{width:100%;max-width:560px;max-height:92dvh;overflow:auto;background:linear-gradient(180deg,#fff,#faf7ff);border-radius:30px 30px 0 0;padding:10px 18px calc(20px + var(--safe-b));transform:translateY(100%);transition:transform .38s cubic-bezier(.2,.8,.2,1);box-shadow:0 -20px 50px -20px rgba(43,35,80,.4)}
+.sheet-wrap.open .sheet{transform:none}
+.grab{width:44px;height:5px;border-radius:9px;background:#e1dcf5;margin:2px auto 12px}
+.sheet h3{font-family:var(--display);font-weight:500;font-size:21px;margin:0 0 2px;display:flex;justify-content:space-between;align-items:center}
+.sheet .sec{margin-top:16px}
+.sheet .sec-t{font-size:12.5px;font-weight:600;color:var(--muted);margin:0 0 8px 2px;letter-spacing:.2px}
+.unit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px}
+.unit-grid .chip{text-align:center;border-radius:16px;padding:10px 8px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;border-radius:18px;background:rgba(124,108,255,.08)}
+.seg button{padding:10px 8px;border-radius:14px;font-weight:600;font-size:13.5px;color:var(--ink2);transition:all .2s}
+.seg button.on{background:#fff;color:var(--violet);box-shadow:0 6px 14px -8px rgba(76,56,170,.5)}
+
+/* ---------- toasts ---------- */
+#toasts{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:min(92vw,420px)}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:10px;padding:11px 16px;border-radius:18px;background:rgba(43,35,80,.92);color:#fff;font-size:14px;box-shadow:0 14px 30px -12px rgba(43,35,80,.6);animation:tin .4s cubic-bezier(.3,1.5,.5,1) both}
+.toast.ok{background:linear-gradient(135deg,#22c58b,#15a8a0)}
+.toast.err{background:linear-gradient(135deg,#ff5a6a,#ff7e5f)}
+.toast.live{background:linear-gradient(135deg,#ff7eb3,#8b6cff)}
+.toast.out{animation:tout .3s ease forwards}
+@keyframes tin{from{opacity:0;transform:translateY(-16px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes tout{to{opacity:0;transform:translateY(-10px) scale(.95)}}
+
+/* ---------- dashboard ---------- */
+.dash-head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin:2px 2px 12px}
+.dash-head h2{font-family:var(--display);font-weight:500;font-size:26px;margin:0;line-height:1.1}
+.dash-head .sub{font-size:13px;color:var(--ink2);margin-top:4px}
+.live-pill{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;background:#fff;box-shadow:var(--shadow);font-size:12px;font-weight:600;color:#14a679;white-space:nowrap}
+.live-pill i{width:8px;height:8px;border-radius:50%;background:#22c58b;box-shadow:0 0 0 0 rgba(34,197,139,.6);animation:ping 1.8s infinite}
+.live-pill.loading i{background:#ffb020;animation:pulse .8s infinite}
+.live-pill span{color:var(--muted);font-weight:500}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(34,197,139,.55)}70%{box-shadow:0 0 0 8px rgba(34,197,139,0)}100%{box-shadow:0 0 0 0 rgba(34,197,139,0)}}
+.filters{padding:14px;margin-bottom:14px}
+.sel-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-top:10px}
+.range-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.dash-grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media (min-width:880px){
+  .dash-grid{grid-template-columns:repeat(12,1fr)}
+  .s4{grid-column:span 4}.s5{grid-column:span 5}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}.s6{grid-column:span 6}
+  .filters{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:14px}
+  .filters .sel-row,.filters .range-row{margin-top:0}
+}
+.kpi{text-align:center;overflow:hidden}
+.kpi .gauge-wrap{width:min(250px,80%);margin:0 auto -6px}
+.kpi .score{font-family:var(--display);font-weight:600;font-size:52px;line-height:1;margin-top:4px}
+.kpi .score small{font-size:20px;color:var(--muted);font-weight:500}
+.kpi .lvl{display:inline-block;margin-top:8px;padding:5px 14px;border-radius:999px;color:#fff;font-family:var(--display);font-size:14px;background:var(--c,#c9c3e4)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.tile{padding:12px 6px;border-radius:18px;background:linear-gradient(180deg,#fff,#faf8ff);box-shadow:0 1px 0 #fff inset,0 8px 16px -12px rgba(76,56,170,.45)}
+.tile b{display:block;font-family:var(--display);font-weight:600;font-size:23px;line-height:1.1}
+.tile span{font-size:11.5px;color:var(--muted);line-height:1.3;display:block;margin-top:2px}
+.dist-row{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:10px;padding:6px 0}
+.dist-row .face{width:40px;height:40px}
+.dist-row .lab{font-size:13px;color:var(--ink2);display:flex;justify-content:space-between;margin-bottom:5px}
+.bar{height:12px;border-radius:999px;background:rgba(124,108,255,.09);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:inherit;background:var(--c);width:0;transition:width 1s cubic-bezier(.2,.8,.2,1);box-shadow:inset 0 2px 0 rgba(255,255,255,.4)}
+.dist-row .cnt{font-family:var(--display);font-weight:500;font-size:17px;min-width:44px;text-align:right}
+.dist-row .cnt small{display:block;font-family:var(--font);font-size:11px;color:var(--muted);font-weight:500}
+.donut-box{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px}
+.donut{width:114px;height:114px;flex:none}
+.donut .spin{transform-origin:60px 60px;animation:spinIn 1s cubic-bezier(.2,.8,.2,1)}
+@keyframes spinIn{from{transform:rotate(-120deg);opacity:0}to{transform:none;opacity:1}}
+.donut .dn-num{font-family:var(--display);font-weight:600;font-size:22px;fill:var(--ink);text-anchor:middle}
+.donut .dn-sub{font-size:10px;fill:var(--muted);text-anchor:middle}
+.legend{flex:1 1 185px;min-width:185px;display:flex;flex-direction:column;gap:7px}
+.lg{display:grid;grid-template-columns:10px 1fr auto auto;gap:8px;align-items:center;font-size:13px}
+.lg>i{width:10px;height:10px;border-radius:4px}
+.lg .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink2)}
+.lg b{font-weight:600;font-size:13px}
+.avg-b{font-size:11.5px;font-weight:700;padding:2px 7px;border-radius:999px;color:#fff;background:var(--c);min-width:36px;text-align:center}
+.hbar{display:grid;grid-template-columns:80px 1fr auto;gap:8px;align-items:center;font-size:13px;padding:5px 0}
+.hbar .nm{color:var(--ink2);white-space:nowrap}
+.hbar .bar{height:14px}
+.hbar .v{display:flex;gap:6px;align-items:center;font-weight:600}
+.trend>svg{width:100%;height:auto;display:block}
+.trend .axis{font-size:10px;fill:var(--muted)}
+.trend .pt{transition:r .2s}
+.trend-leg{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:6px}
+.trend-leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.feed{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow:auto;margin:0 -4px;padding:0 4px}
+.fd{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;padding:8px 10px;border-radius:16px;background:rgba(255,255,255,.7);box-shadow:0 1px 0 #fff inset,0 6px 12px -10px rgba(76,56,170,.4)}
+.fd .face{width:36px;height:36px}
+.fd b{font-size:13.5px;font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fd span{font-size:11.5px;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fd time{font-size:11.5px;color:var(--muted);text-align:right;white-space:nowrap}
+.fd.new{animation:flash 2.4s ease}
+@keyframes flash{0%{background:rgba(255,126,179,.35);transform:scale(1.03)}100%{background:rgba(255,255,255,.7)}}
+.rank{display:flex;flex-direction:column;gap:6px}
+.rk{display:grid;grid-template-columns:30px 1fr 60px 54px;gap:10px;align-items:center;padding:9px 10px;border-radius:16px;text-align:left;width:100%;transition:background .2s}
+.rk:hover{background:rgba(124,108,255,.06)}
+.rk .no{width:28px;height:28px;border-radius:10px;display:grid;place-items:center;font-family:var(--display);font-size:13px;background:rgba(124,108,255,.1);color:var(--violet)}
+.rk:nth-child(1) .no{background:linear-gradient(135deg,#ffd76b,#ffb020);color:#fff}
+.rk:nth-child(2) .no{background:linear-gradient(135deg,#e2e6f0,#b8bfd3);color:#fff}
+.rk:nth-child(3) .no{background:linear-gradient(135deg,#f5c7a1,#d98b52);color:#fff}
+.rk .nm b{font-size:14px;font-weight:600;display:block}
+.rk .nm span{font-size:11.5px;color:var(--muted)}
+.rk .nm .bar{height:6px;margin-top:5px}
+.rk .n{font-family:var(--display);font-size:15px;text-align:right}
+.rk .n small{display:block;font-family:var(--font);font-size:10.5px;color:var(--muted)}
+.rk .me{font-size:10px;padding:1px 6px;border-radius:6px;background:var(--pink);color:#fff;margin-left:6px;vertical-align:2px}
+.empty{text-align:center;padding:26px 10px;color:var(--muted);font-size:14px}
+.empty .face{width:70px;height:70px;margin:0 auto 8px;opacity:.6}
+.dash-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:16px}
+.skel{height:180px;border-radius:var(--r);background:linear-gradient(100deg,rgba(255,255,255,.5) 30%,rgba(255,255,255,.9) 50%,rgba(255,255,255,.5) 70%);background-size:300% 100%;animation:sk 1.4s infinite}
+@keyframes sk{from{background-position:100% 0}to{background-position:0 0}}
+
+/* ---------- settings ---------- */
+.set-stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.row .l b{display:block;font-weight:600;font-size:14.5px}
+.row .l span{font-size:12.5px;color:var(--muted)}
+.switch{width:52px;height:30px;border-radius:999px;background:#e4e0f3;position:relative;transition:background .25s;flex:none}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 3px 6px rgba(43,35,80,.25);transition:transform .3s cubic-bezier(.3,1.5,.5,1)}
+.switch.on{background:linear-gradient(135deg,#ff7eb3,#8b6cff)}
+.switch.on::after{transform:translateX(22px)}
+.status-box{display:flex;gap:12px;align-items:center;padding:12px;border-radius:18px;background:rgba(124,108,255,.07)}
+.status-box .sb-ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:#fff;flex:none}
+.status-box b{display:block;font-size:14.5px}
+.status-box span{font-size:12.5px;color:var(--ink2);word-break:break-all}
+.help{font-size:12.5px;color:var(--muted);line-height:1.6;margin:8px 2px 0}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.foot{text-align:center;font-size:12px;color:var(--muted);margin:22px 0 4px}
+</style>
+</head>
+<body>
+<div class="bg"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i></div>
+
+<div id="app" class="shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" id="logo"></div>
+      <div><div class="wordmark">Happinometer</div><small>วัดความสุขผู้รับบริการ</small></div>
+    </div>
+    <button class="room-chip" data-act="pick-room" id="roomChip"></button>
+  </header>
+  <main id="view"></main>
+</div>
+
+<nav class="tabbar" id="tabbar">
+  <button class="tab" data-act="nav" data-to="home" data-tab="home"></button>
+  <button class="tab" data-act="nav" data-to="dash" data-tab="dash"></button>
+  <button class="tab" data-act="nav" data-to="settings" data-tab="settings"></button>
+</nav>
+
+<div id="sheetWrap" class="sheet-wrap" hidden><div class="sheet" id="sheet"></div></div>
+<div id="toasts"></div>
+<div id="fx"></div>
+
+<script>
+(function () {
+'use strict';
+
+/* =====================================================================
+ *  CONFIG — ปรับแต่งได้ตรงนี้
+ * ===================================================================== */
+// Web App URL ของ Apps Script และลิงก์ Google Sheet ที่เชื่อมต่อไว้แล้ว
+const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbxysjRF-S75blhunwyOoeU8M2S0UV_Iv-X8Do81PIRz0K46BwdWnzOQZDDb8pN-pVrB/exec';
+const DEFAULT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1L-0DYUb9wQJ4eHLKeJ4pGCOn3A5ENnuIaaXbH70j74I/edit?gid=0#gid=0';
+
+// หน่วย / ห้องตรวจ (ดึงจากงาน OPD & Nurse Note Audit เดิม)
+const UNITS = [
+  { unit: 'หน่วยที่ 1', rooms: ['OPD 1', 'OPD 10', 'Telemedicine'] },
+  { unit: 'หน่วยที่ 2', rooms: ['OPD 3', 'OPD 4'] },
+  { unit: 'หน่วยที่ 3', rooms: ['OPD 6', 'OPD 7', 'Retina'] },
+  { unit: 'หน่วยที่ 4', rooms: ['OPD 9', 'OPD 21', 'PCU', 'OPD เฉพาะทางนอกเวลา'] },
+  { unit: 'หน่วยที่ 5', rooms: ['OPD 22', 'OPD 23', 'OPD 26'] },
+  { unit: 'หน่วยที่ 6', rooms: ['OPD 101', 'รังสีรักษา'] },
+  { unit: 'หน่วยที่ 7', rooms: ['EID complex'] },
+  { unit: 'หน่วยที่ 8', rooms: ['OPD 27', 'OPD 28', 'OPD 29'] },
+  { unit: 'หน่วยผ่าตัดเล็ก', rooms: ['OR Minor ชั้น 3', 'OR Minor ชั้น 10', 'OPD 2'] },
+  { unit: 'ฉุกเฉิน', rooms: ['Triage', 'ER', 'OPD นอกเวลา'] },
+  { unit: 'สังเกตอาการ', rooms: ['หอผู้ป่วยสังเกตอาการ'] },
+  { unit: 'เคมีบำบัด', rooms: ['ห้องให้ยาเคมีบำบัด', 'OPD 24', 'OPD 110', 'EKG', 'ศูนย์สุขใจ'] },
+  { unit: 'บริการแพทย์ฉุกเฉิน', rooms: ['EMS', 'Refer', 'Injection Room', 'Dressing Room', 'CSC'] },
+  { unit: 'อื่นๆ', rooms: ['อื่นๆ'] },
+];
+const POINTS = ['จุดรับใบนัด/ให้คำแนะนำ', 'Discharge'];
+const GENDERS = [
+  { v: 'ชาย', color: '#5aa9ff' },
+  { v: 'หญิง', color: '#ff7eb3' },
+  { v: 'ไม่ระบุ', color: '#bdb6dc' },
+];
+const AGES = [
+  { v: '0-14 ปี', big: '0–14', sub: 'วัยเด็ก', color: '#ffa94d' },
+  { v: '15-29 ปี', big: '15–29', sub: 'วัยรุ่น · หนุ่มสาว', color: '#ff6fa5' },
+  { v: '30-44 ปี', big: '30–44', sub: 'วัยทำงาน', color: '#a07bff' },
+  { v: '45-59 ปี', big: '45–59', sub: 'วัยกลางคน', color: '#4f9dff' },
+  { v: '60 ปีขึ้นไป', big: '60+', sub: 'ผู้สูงอายุ', color: '#20c39a' },
+];
+const RIGHTS = [
+  { v: 'บัตรทอง', sub: 'หลักประกันสุขภาพ (30 บาท)', color: '#ffbe2e', icon: 'gold' },
+  { v: 'เบิกตรง', sub: 'ข้าราชการ / รัฐวิสาหกิจ', color: '#8b6cff', icon: 'gov' },
+  { v: 'ประกันสังคม', sub: 'สิทธิ์ผู้ประกันตน', color: '#2ec4d6', icon: 'sso' },
+  { v: 'ชำระเงินเอง', sub: 'จ่ายเอง / ประกันเอกชน', color: '#2fd4a7', icon: 'cash' },
+];
+const SCORES = {
+  1: { label: 'พอใจน้อยที่สุด', c1: '#ffc6c6', c2: '#ff6b6b', c3: '#e5484d' },
+  2: { label: 'พอใจน้อย', c1: '#ffdcb5', c2: '#ff9f43', c3: '#f07f1a' },
+  3: { label: 'ปานกลาง', c1: '#fff4b8', c2: '#ffcf3a', c3: '#f2b000' },
+  4: { label: 'พอใจมาก', c1: '#dcf8c2', c2: '#8fd95a', c3: '#5dbb2d' },
+  5: { label: 'พอใจมากที่สุด', c1: '#c6f7e7', c2: '#2fd4a7', c3: '#10b088' },
+};
+const IDLE_RESET_MS = 90000;   // ไม่มีการแตะนานเกินนี้ระหว่างประเมิน → กลับหน้าแรก
+const THANKS_MS = 5000;        // หน้า "ขอบคุณ" แสดงกี่มิลลิวินาที
+const POLL_DASH_MS = 15000;    // ความถี่อัปเดตแดชบอร์ด (real-time polling)
+const POLL_HOME_MS = 30000;
+
+/* =====================================================================
+ *  utils
+ * ===================================================================== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const LS = { settings: 'hpm_settings_v1', queue: 'hpm_queue_v1', local: 'hpm_local_v1', recent: 'hpm_recent_v1' };
+const load = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const pad = (n) => String(n).padStart(2, '0');
+const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const hm = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const todayStr = () => ymd(new Date());
+const parseYmd = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (s, n) => { const d = parseYmd(s); d.setDate(d.getDate() + n); return ymd(d); };
+const uid = () => Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const TH_M = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+const TH_D = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+const thDate = (s) => { const d = parseYmd(s); return `${d.getDate()} ${TH_M[d.getMonth()]} ${d.getFullYear() + 543}`; };
+const thDateLong = (s) => { const d = parseYmd(s); return `วัน${TH_D[d.getDay()]}ที่ ${d.getDate()} ${TH_M[d.getMonth()]} ${d.getFullYear() + 543}`; };
+const fmt1 = (v) => (v == null || isNaN(v) ? '–' : v.toFixed(2));
+const scoreColor = (avg) => (avg == null ? '#c9c3e4' : SCORES[Math.min(5, Math.max(1, Math.round(avg)))].c2);
+
+const ICONS = {
+  home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/>',
+  smile: '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/>',
+  chart: '<path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+  sliders: '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+  pin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+  refresh: '<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>',
+  sheet: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',
+  back: '<path d="m15 18-6-6 6-6"/>',
+  close: '<path d="M18 6 6 18M6 6l12 12"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  right: '<path d="m9 18 6-6-6-6"/>',
+  hand: '<path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>',
+  sparkle: '<path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  trend: '<path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/>',
+  card: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+  cake: '<path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20M7 8v3M12 8v3M17 8v3M7 4h.01M12 4h.01M17 4h.01"/>',
+  trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+  activity: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+  trash: '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>',
+  cloud: '<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>',
+  phone: '<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/>',
+  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+  heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+};
+const ic = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24">${ICONS[n] || ''}</svg>`;
+
+/* =====================================================================
+ *  illustrations
+ * ===================================================================== */
+let svgSeq = 0;
+function faceSVG(s, cls = '') {
+  const k = SCORES[s]; const id = 'fg' + (++svgSeq); const ink = '#3a2a4f';
+  const eyeDots = (sparkle) => `<g class="eyes"><circle cx="45" cy="56" r="5.5" fill="${ink}"/><circle cx="75" cy="56" r="5.5" fill="${ink}"/>${sparkle ? '<circle cx="47" cy="54" r="1.8" fill="#fff"/><circle cx="77" cy="54" r="1.8" fill="#fff"/>' : ''}</g>`;
+  const blush = (o) => `<ellipse cx="32" cy="70" rx="8" ry="4.5" fill="#ff7fa8" opacity="${o}"/><ellipse cx="88" cy="70" rx="8" ry="4.5" fill="#ff7fa8" opacity="${o}"/>`;
+  const S = `stroke="${ink}" stroke-width="5" stroke-linecap="round" fill="none"`;
+  let f = '';
+  if (s === 1) f = `<path d="M33 42 L52 49 M87 42 L68 49" ${S} stroke-width="4"/>${eyeDots()}<path class="tear" d="M79 64 q-6 9 0 12 q6 -3 0 -12z" fill="#7fd0ff"/><path d="M42 90 Q60 74 78 90" ${S}/>`;
+  if (s === 2) f = `<path d="M36 46 L52 42 M84 46 L68 42" ${S} stroke-width="4"/>${eyeDots()}<path d="M45 86 Q60 79 75 86" ${S}/>`;
+  if (s === 3) f = `${eyeDots(true)}<path d="M46 82 L74 82" ${S}/>`;
+  if (s === 4) f = `${blush(.45)}${eyeDots(true)}<path d="M41 74 Q60 93 79 74" ${S}/>`;
+  if (s === 5) f = `${blush(.6)}<g class="eyes"><path d="M36 58 Q45 46 54 58 M66 58 Q75 46 84 58" ${S}/></g><path d="M38 70 Q60 104 82 70 Z" fill="${ink}" stroke="${ink}" stroke-width="3" stroke-linejoin="round"/><path d="M49 86 Q60 97 71 86 Q60 80 49 86Z" fill="#ff7d9c"/><path d="M98 22 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5z" fill="#ffd23f"/>`;
+  return `<svg class="face ${cls}" viewBox="0 0 120 120" aria-hidden="true"><defs><radialGradient id="${id}" cx="34%" cy="28%" r="78%"><stop offset="0" stop-color="${k.c1}"/><stop offset=".55" stop-color="${k.c2}"/><stop offset="1" stop-color="${k.c3}"/></radialGradient></defs><circle cx="60" cy="60" r="52" fill="url(#${id})"/><ellipse cx="41" cy="31" rx="17" ry="9" fill="#fff" opacity=".5" transform="rotate(-28 41 31)"/><circle cx="60" cy="60" r="51" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"/>${f}</svg>`;
+}
+
+function gaugeSVG(value) {
+  const cx = 120, cy = 122, r = 92;
+  const pt = (deg) => [cx + r * Math.cos((deg * Math.PI) / 180), cy + r * Math.sin((deg * Math.PI) / 180)];
+  let segs = '';
+  for (let i = 0; i < 5; i++) {
+    const a0 = 180 + i * 36 + 3, a1 = 180 + (i + 1) * 36 - 3;
+    const [x0, y0] = pt(a0), [x1, y1] = pt(a1);
+    segs += `<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" stroke="${SCORES[i + 1].c2}" stroke-width="20" stroke-linecap="round" fill="none"/>`;
+  }
+  let ticks = '';
+  for (let i = 1; i <= 5; i++) { const a = 180 + (i - 1) * 45; const rr = r - 26; ticks += `<text x="${(cx + rr * Math.cos(a * Math.PI / 180)).toFixed(1)}" y="${(cy + rr * Math.sin(a * Math.PI / 180) + 4).toFixed(1)}" font-size="11" text-anchor="middle" fill="#a59fc4" font-family="Mitr">${i}</text>`; }
+  const has = value != null && !isNaN(value);
+  const rot = has ? -90 + ((value - 1) / 4) * 180 : 0;
+  const faceN = has ? Math.min(5, Math.max(1, Math.round(value))) : 5;
+  return `<svg class="gauge" viewBox="0 0 240 140">
+    <path d="M${cx - r} ${cy} A${r} ${r} 0 0 1 ${cx + r} ${cy}" stroke="rgba(124,108,255,.08)" stroke-width="34" fill="none" stroke-linecap="round"/>
+    ${segs}${ticks}
+    <g class="needle ${has ? '' : 'idle'}" data-rot="${rot}" style="transform:rotate(${has ? -90 : 0}deg)">
+      <path d="M115.5 122 L120 50 L124.5 122 Z" fill="#3a2a4f"/>
+    </g>
+    <circle cx="${cx}" cy="${cy}" r="13" fill="#3a2a4f"/><circle cx="${cx}" cy="${cy}" r="5" fill="#fff"/>
+    <g class="gface"><g transform="translate(101 76) scale(.32)">${faceSVG(faceN).replace(/<svg\s+class="face[^"]*"/, '<svg class="face" width="120" height="120"')}</g></g>
+  </svg>`;
+}
+function animateNeedles(root = document) {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    $$('.needle:not(.idle)', root).forEach((n) => { n.style.transform = `rotate(${n.dataset.rot}deg)`; });
+  }));
+}
+function logoSVG() {
+  return `<svg viewBox="0 0 40 40" width="30" height="30"><defs><linearGradient id="lg1" x1="0" x2="1"><stop offset="0" stop-color="#ff6b6b"/><stop offset=".5" stop-color="#ffcf3a"/><stop offset="1" stop-color="#2fd4a7"/></linearGradient></defs><path d="M6 25a14 14 0 0 1 28 0" stroke="url(#lg1)" stroke-width="5.5" stroke-linecap="round" fill="none"/><path d="M20 25 L28 15" stroke="#3a2a4f" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="25" r="3.5" fill="#3a2a4f"/><path d="M13 31q7 5 14 0" stroke="#ff6fa5" stroke-width="2.6" stroke-linecap="round" fill="none"/></svg>`;
+}
+function avatarSVG(g) {
+  const ink = '#3b2f5c';
+  const facePart = `<circle cx="40" cy="36" r="14.5" fill="#ffd9bb"/><circle cx="34.5" cy="37.5" r="1.9" fill="${ink}"/><circle cx="45.5" cy="37.5" r="1.9" fill="${ink}"/><path d="M36.5 43q3.5 2.8 7 0" stroke="${ink}" stroke-width="1.8" fill="none" stroke-linecap="round"/><ellipse cx="30.5" cy="42" rx="2.8" ry="1.6" fill="#ff8fb1" opacity=".55"/><ellipse cx="49.5" cy="42" rx="2.8" ry="1.6" fill="#ff8fb1" opacity=".55"/>`;
+  if (g === 'ชาย') return `<svg class="avatar" viewBox="0 0 80 80"><defs><clipPath id="cm${++svgSeq}"><circle cx="40" cy="40" r="38"/></clipPath></defs><circle cx="40" cy="40" r="38" fill="#e2efff"/><g clip-path="url(#cm${svgSeq})"><path d="M10 82c2-16 14-25 30-25s28 9 30 25z" fill="#5aa9ff"/><path d="M34 57l6 7 6-7" fill="#fff"/><rect x="34" y="47" width="12" height="10" rx="4" fill="#f4c19c"/></g>${facePart}<path d="M25.5 34c-1-9 6-15.5 14.5-15.5S55.5 24 54.5 33c-3-4-8-5.5-12-5.5-6 0-11 2.5-17 6.5z" fill="${ink}"/></svg>`;
+  if (g === 'หญิง') return `<svg class="avatar" viewBox="0 0 80 80"><defs><clipPath id="cf${++svgSeq}"><circle cx="40" cy="40" r="38"/></clipPath></defs><circle cx="40" cy="40" r="38" fill="#ffe6f0"/><g clip-path="url(#cf${svgSeq})"><path d="M22 38c0-13 8-20 18-20s18 7 18 20v18c-5 3-10 4-18 4s-13-1-18-4z" fill="#5a3a6e"/><path d="M10 82c2-16 14-25 30-25s28 9 30 25z" fill="#ff7eb3"/><rect x="34" y="47" width="12" height="10" rx="4" fill="#f4c19c"/></g>${facePart}<path d="M25.5 35c1.5-10 7.5-14.5 14.5-14.5s13 4.5 14.5 14.5c-6-1.5-11-4.5-14-8.5-3 4-8.5 7-15 8.5z" fill="#5a3a6e"/><circle cx="55" cy="24" r="4.2" fill="#ffc93c"/><circle cx="55" cy="24" r="1.7" fill="#ff8a3d"/></svg>`;
+  return `<svg class="avatar" viewBox="0 0 80 80" style="width:46px;height:46px;margin:0"><circle cx="40" cy="40" r="38" fill="#f0edfa"/><circle cx="40" cy="34" r="13" fill="#d8d2ee"/><path d="M16 70c3-12 12-18 24-18s21 6 24 18" fill="#d8d2ee"/></svg>`;
+}
+function rightIcon(k) {
+  const m = {
+    gold: '<rect x="4" y="10" width="40" height="28" rx="6" fill="#ffc23d"/><path d="M4 16a6 6 0 0 1 6-6h28a6 6 0 0 1 6 6v8H4z" fill="#ffd96b"/><rect x="9" y="26" width="11" height="8" rx="2" fill="#fff3c4"/><path d="M27 29h11M27 33h7" stroke="#c48a00" stroke-width="2.4" stroke-linecap="round"/><circle cx="37" cy="17" r="3.2" fill="#fff" opacity=".75"/>',
+    gov: '<path d="M24 4 5 15h38z" fill="#a597ff"/><rect x="6" y="15" width="36" height="3.5" rx="1" fill="#7c6cff"/><g fill="#c3baff"><rect x="10" y="20" width="5.5" height="14" rx="2"/><rect x="21.2" y="20" width="5.5" height="14" rx="2"/><rect x="32.5" y="20" width="5.5" height="14" rx="2"/></g><rect x="5" y="35" width="38" height="6" rx="2.5" fill="#7c6cff"/><circle cx="24" cy="11" r="2.3" fill="#fff"/>',
+    sso: '<path d="M24 4 40 10v12c0 10-7 18-16 22C15 40 8 32 8 22V10z" fill="#48d1e0"/><path d="M24 4 40 10v12c0 10-7 18-16 22z" fill="#22b3c6"/><path d="M24 31s-8-4.6-8-10a4.3 4.3 0 0 1 8-2.2A4.3 4.3 0 0 1 32 21c0 5.4-8 10-8 10z" fill="#fff"/>',
+    cash: '<rect x="5" y="13" width="36" height="27" rx="7" fill="#2fd4a7"/><path d="M9 13 31 6c2.2-.7 4 .8 4 3v4z" fill="#14b88d"/><rect x="28" y="21" width="16" height="11" rx="5.5" fill="#b5f3e1"/><circle cx="34" cy="26.5" r="2.6" fill="#14b88d"/><circle cx="14" cy="8" r="5" fill="#ffc93c"/><text x="14" y="10.5" font-size="7" text-anchor="middle" fill="#a86b00" font-weight="700">฿</text>',
+  };
+  return `<svg class="ricon" viewBox="0 0 48 48">${m[k]}</svg>`;
+}
+
+/* =====================================================================
+ *  state
+ * ===================================================================== */
+const settings = Object.assign({
+  unit: '', room: '', customRoom: '', point: POINTS[0],
+  apiUrl: DEFAULT_API_URL, sheetUrl: DEFAULT_SHEET_URL, device: '', sound: true, haptic: true,
+}, load(LS.settings, {}));
+if (!settings.apiUrl && DEFAULT_API_URL && !settings.manualOffline) settings.apiUrl = DEFAULT_API_URL;
+if (!settings.sheetUrl && DEFAULT_SHEET_URL) settings.sheetUrl = DEFAULT_SHEET_URL;
+if (!settings.device) settings.device = 'เครื่อง-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+const saveSettings = () => save(LS.settings, settings);
+saveSettings();
+
+const currentRoom = () => (settings.room === 'อื่นๆ' ? (settings.customRoom || 'อื่นๆ') : settings.room);
+const roomUnitOf = (room) => (UNITS.find((u) => u.rooms.includes(room)) || {}).unit || '';
+
+let screen = 'home';
+let survey = null;            // { step, ans:{gender,age,right,score} }
+let idleT = null, thanksT = null;
+let homeStats = null;
+let dash = { period: 'today', from: todayStr(), to: todayStr(), unit: settings.unit || 'ALL', room: currentRoom() || 'ALL', showAllRooms: false };
+let dashRecords = [];
+let dashKnownIds = null;
+let fetchToken = 0;
+let lastUpdated = null;
+const STEPS = ['gender', 'age', 'right', 'score'];
+const bc = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('happinometer_sync_v1') : null;
+if (bc) {
+  bc.onmessage = (ev) => {
+    if (ev.data && ev.data.type === 'submitted') {
+      if (screen === 'dash') loadDash(true);
+      if (screen === 'home') refreshHome();
+    }
+  };
+}
+
+/* =====================================================================
+ *  backend  (Apps Script ↔ Google Sheet  |  Web App URL  |  local)
+ * ===================================================================== */
+const isGAS = () => !!(window.google && google.script && google.script.run);
+const Backend = {
+  get mode() { return isGAS() ? 'gas' : (settings.apiUrl ? 'url' : 'local'); },
+  gas(fn, ...args) {
+    return new Promise((res, rej) => { google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...args); });
+  },
+  url(params) { const u = settings.apiUrl.trim(); return u + (u.includes('?') ? '&' : '?') + new URLSearchParams(params).toString(); },
+  async info() {
+    if (this.mode === 'gas') return this.gas('apiInfo');
+    if (this.mode === 'url') { const r = await fetch(this.url({ action: 'ping', _: Date.now() })); return r.json(); }
+    return { ok: true, local: true };
+  },
+  async list(from, to) {
+    if (this.mode === 'gas') return this.gas('apiList', from || '', to || '');
+    if (this.mode === 'url') { const r = await fetch(this.url({ action: 'list', from: from || '', to: to || '', _: Date.now() })); return r.json(); }
+    const all = load(LS.local, []);
+    return { ok: true, records: all.filter((x) => (!from || x.date >= from) && (!to || x.date <= to)) };
+  },
+  async submit(records) {
+    if (this.mode === 'gas') return this.gas('apiSubmit', records);
+    if (this.mode === 'url') {
+      const r = await fetch(settings.apiUrl.trim(), { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'submit', records }) });
+      return r.json();
+    }
+    const all = load(LS.local, []); const ids = new Set(all.map((x) => x.id));
+    records.forEach((r) => { if (!ids.has(r.id)) all.push(r); });
+    save(LS.local, all);
+    return { ok: true, saved: records.map((r) => r.id) };
+  },
+};
+
+/* ---- offline-first queue ---- */
+let flushing = false, retryT = null, syncState = 'idle';
+function setSync(state) {
+  const q = load(LS.queue, []);
+  syncState = state || (Backend.mode === 'local' ? 'local' : q.length ? 'pending' : 'ok');
+  const dot = $('#syncDot');
+  if (dot) { dot.className = 'sync-dot ' + syncState; dot.title = syncLabel(); }
+}
+function syncLabel() {
+  const q = load(LS.queue, []).length;
+  return ({ ok: 'เชื่อมต่อ Google Sheet แล้ว', pending: `รอส่ง ${q} รายการ`, syncing: 'กำลังส่งข้อมูล…', error: `ส่งไม่สำเร็จ (รอส่ง ${q}) จะลองใหม่อัตโนมัติ`, local: 'โหมดออฟไลน์ / สาธิต', idle: '' })[syncState] || '';
+}
+async function flushQueue() {
+  if (flushing) return;
+  const q = load(LS.queue, []);
+  if (!q.length) { setSync(); return; }
+  flushing = true; setSync('syncing');
+  try {
+    const res = await Backend.submit(q.slice(0, 100));
+    if (!res || !res.ok) throw new Error((res && res.error) || 'submit failed');
+    const saved = new Set(res.saved || []);
+    save(LS.queue, load(LS.queue, []).filter((r) => !saved.has(r.id)));
+    flushing = false;
+    if (load(LS.queue, []).length && saved.size) return flushQueue();
+    setSync();
+  } catch (err) {
+    flushing = false; setSync('error');
+    clearTimeout(retryT); retryT = setTimeout(flushQueue, 15000);
+  }
+}
+window.addEventListener('online', flushQueue);
+
+async function fetchRecords(from, to) {
+  const res = await Backend.list(from, to);
+  if (!res || !res.ok) throw new Error((res && res.error) || 'list failed');
+  const map = new Map();
+  (res.records || []).forEach((r) => map.set(r.id, r));
+  load(LS.queue, []).forEach((r) => { if ((!from || r.date >= from) && (!to || r.date <= to) && !map.has(r.id)) map.set(r.id, r); });
+  return [...map.values()];
+}
+
+/* ---- demo data (เฉพาะโหมดออฟไลน์ ยังไม่เชื่อม Sheet) ---- */
+function pickW(arr, w) { const t = w.reduce((a, b) => a + b, 0); let r = Math.random() * t; for (let i = 0; i < arr.length; i++) { r -= w[i]; if (r <= 0) return arr[i]; } return arr[arr.length - 1]; }
+function seedDemo() {
+  const rooms = [['หน่วยที่ 1', 'OPD 1'], ['หน่วยที่ 1', 'OPD 10'], ['หน่วยที่ 2', 'OPD 3'], ['หน่วยที่ 3', 'OPD 6'], ['หน่วยที่ 5', 'OPD 22'], ['หน่วยผ่าตัดเล็ก', 'OPD 2'], ['เคมีบำบัด', 'ห้องให้ยาเคมีบำบัด'], ['หน่วยที่ 8', 'OPD 27'], ['ฉุกเฉิน', 'ER']];
+  const roomW = [14, 8, 10, 9, 9, 12, 7, 6, 5];
+  const roomBias = [0, -0.4, 0.2, -0.2, 0.3, 0.4, 0.1, -0.6, -0.8];
+  const out = []; const t = todayStr();
+  for (let d = 34; d >= 0; d--) {
+    const date = addDays(t, -d); const dow = parseYmd(date).getDay();
+    if (dow === 0 || dow === 6) continue;
+    const n = d === 0 ? 18 : 10 + Math.floor(Math.random() * 16);
+    for (let i = 0; i < n; i++) {
+      const ri = rooms.indexOf(pickW(rooms, roomW)); const [unit, room] = rooms[ri];
+      const b = roomBias[ri];
+      const score = pickW([1, 2, 3, 4, 5], [2, 3 - b, 10 - b * 4, 34, 48 + b * 12]);
+      const mins = 8 * 60 + Math.floor(Math.random() * 8.5 * 60);
+      const time = `${pad(Math.floor(mins / 60))}:${pad(mins % 60)}`;
+      out.push({ id: 'demo-' + uid(), ts: new Date(`${date}T${time}:00`).toISOString(), date, time, unit, room, point: pickW(POINTS, [7, 3]), gender: pickW(['ชาย', 'หญิง', 'ไม่ระบุ'], [44, 54, 2]), age: pickW(AGES.map((a) => a.v), [6, 13, 21, 28, 32]), right: pickW(RIGHTS.map((r) => r.v), [44, 22, 20, 14]), score, device: 'demo', isDemo: true });
+    }
+  }
+  save(LS.local, [...load(LS.local, []).filter((x) => !x.isDemo), ...out]);
+}
+const hasDemo = () => load(LS.local, []).some((x) => x.isDemo);
+
+/* =====================================================================
+ *  feedback (เสียง / สั่น / confetti / toast)
+ * ===================================================================== */
+let actx = null;
+function tone(freqs, dur = 0.12, type = 'sine', gap = 0.07, vol = 0.16) {
+  if (!settings.sound) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const t0 = actx.currentTime;
+    freqs.forEach((f, i) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = type; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t0 + i * gap);
+      g.gain.exponentialRampToValueAtTime(vol, t0 + i * gap + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + i * gap + dur);
+      o.connect(g); g.connect(actx.destination);
+      o.start(t0 + i * gap); o.stop(t0 + i * gap + dur + 0.03);
+    });
+  } catch (e) {}
+}
+const buzz = (ms = 12) => { if (settings.haptic && navigator.vibrate) try { navigator.vibrate(ms); } catch (e) {} };
+function confetti(n = 44, palette) {
+  const fx = $('#fx'); const shapes = ['♥', '★', '●', '✦', '♥', '✿'];
+  const colors = palette || ['#ff6fa5', '#8b6cff', '#2fd4a7', '#ffc93c', '#5aa9ff', '#ff9f43'];
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement('i'); s.className = 'cf';
+    s.textContent = shapes[Math.floor(Math.random() * shapes.length)];
+    s.style.cssText = `color:${colors[i % colors.length]};font-size:${12 + Math.random() * 18}px;--x:${(Math.random() - 0.5) * Math.min(760, innerWidth * 1.4)}px;--y:${-(140 + Math.random() * 300)}px;--r:${(Math.random() - 0.5) * 900}deg;animation-delay:${Math.random() * 0.18}s`;
+    fx.appendChild(s); setTimeout(() => s.remove(), 2200);
+  }
+}
+function toast(msg, kind = '', ms = 2600) {
+  const t = document.createElement('div'); t.className = 'toast ' + kind; t.innerHTML = msg;
+  $('#toasts').appendChild(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 320); }, ms);
+}
+function countUp(root = document) {
+  $$('[data-count]', root).forEach((el) => {
+    const to = parseFloat(el.dataset.count); const dec = +(el.dataset.dec || 0); const suf = el.dataset.suf || '';
+    if (isNaN(to)) { el.textContent = '–'; return; }
+    const from = parseFloat(el.dataset.from || 0); const t0 = performance.now(); const D = 900;
+    const stepF = (t) => { const p = Math.min(1, (t - t0) / D); const e = 1 - Math.pow(1 - p, 3); el.textContent = (from + (to - from) * e).toFixed(dec) + suf; if (p < 1) requestAnimationFrame(stepF); };
+    requestAnimationFrame(stepF);
+  });
+}
+
+/* =====================================================================
+ *  chrome (header / tabbar)
+ * ===================================================================== */
+function renderChrome() {
+  $('#logo').innerHTML = logoSVG();
+  const room = currentRoom();
+  $('#roomChip').innerHTML = `<span class="sync-dot" id="syncDot"></span>${ic('pin')}<b>${room ? esc(room) : 'เลือกห้องตรวจ'}</b>`;
+  const tabs = { home: ['smile', 'ประเมิน'], dash: ['chart', 'แดชบอร์ด'], settings: ['sliders', 'ตั้งค่า'] };
+  $$('.tab').forEach((b) => { const [i, l] = tabs[b.dataset.tab]; b.innerHTML = `${ic(i)}<span class="lab">${l}</span>`; b.classList.toggle('on', b.dataset.tab === screen); });
+  setSync();
+}
+
+function go(to, arg) {
+  clearTimeout(idleT); clearTimeout(thanksT);
+  screen = to;
+  document.body.classList.toggle('kiosk', to === 'survey' || to === 'thanks');
+  document.body.classList.toggle('wide', to === 'dash');
+  $$('.tab').forEach((b) => b.classList.toggle('on', b.dataset.tab === to));
+  window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+  if (to === 'home') renderHome();
+  if (to === 'survey') renderSurvey(1);
+  if (to === 'thanks') renderThanks(arg);
+  if (to === 'dash') renderDash();
+  if (to === 'settings') renderSettings();
+}
+
+/* =====================================================================
+ *  HOME
+ * ===================================================================== */
+function renderHome() {
+  const room = currentRoom(); const st = homeStats;
+  const mode = Backend.mode;
+  $('#view').innerHTML = `
+  <section class="enter">
+    ${mode === 'local' ? `<div class="banner">${ic('info')}<div>ยังไม่ได้เชื่อม Google Sheet — ข้อมูลจะเก็บไว้ในเครื่องนี้ก่อน <button data-act="nav" data-to="settings">ตั้งค่าการเชื่อมต่อ</button></div></div>` : ''}
+    <div class="card hero">
+      <div class="hero-top"><span>${thDateLong(todayStr())}</span><span>${st && st.n ? `วันนี้ ${st.n} คน` : 'พร้อมใช้งาน'}</span></div>
+      <div class="gauge-wrap">${gaugeSVG(st && st.n ? st.avg : null)}</div>
+      <h1 class="hero-title">วันนี้รู้สึกอย่างไร<br><span class="grad">กับบริการของเรา?</span></h1>
+      <button class="room-card" data-act="pick-room">
+        <span class="pin">${ic('pin')}</span>
+        <span class="meta"><b>${room ? esc(room) : 'ยังไม่ได้เลือกห้อง'}</b><span>${settings.unit ? esc(settings.unit) + ' · ' : ''}${esc(settings.point)}</span></span>
+        <span class="chg">เปลี่ยน ${ic('right')}</span>
+      </button>
+      <div class="mini-stats">
+        <div class="mini"><b data-count="${st ? st.n : 0}">0</b><span>ประเมินวันนี้ (N)</span></div>
+        <div class="mini"><b data-count="${st && st.n ? st.avg : ''}" data-dec="2">–</b><span>คะแนนเฉลี่ย</span></div>
+        <div class="mini"><b data-count="${st && st.n ? st.top2 : ''}" data-suf="%">–</b><span>พอใจมาก–มากที่สุด</span></div>
+      </div>
+    </div>
+    <button class="btn btn-primary cta" data-act="start">${ic('hand')} เริ่มประเมิน</button>
+    <p class="hint">กดแล้วยื่นโทรศัพท์ให้ผู้ป่วยได้เลย · ใช้เวลาไม่ถึง 10 วินาที ✨</p>
+    <div class="card">
+      <div class="card-title"><span class="t">${ic('sparkle')} ความรู้สึกวันนี้ · ${room ? esc(room) : '-'}</span><span class="muted" style="font-size:12px;font-family:var(--font)">อัปเดตอัตโนมัติ</span></div>
+      <div class="today-faces">${[1, 2, 3, 4, 5].map((s) => `<div class="tf">${faceSVG(s)}<b>${st ? st.dist[s] : 0}</b></div>`).join('')}</div>
+    </div>
+  </section>`;
+  countUp($('#view')); animateNeedles($('#view'));
+  renderChrome();
+}
+async function refreshHome() {
+  if (!settings.room) return;
+  try {
+    const t = todayStr(); const list = await fetchRecords(t, t);
+    const room = currentRoom();
+    const mine = list.filter((r) => r.room === room && (!settings.unit || r.unit === settings.unit));
+    homeStats = computeStats(mine);
+    if (screen === 'home') renderHome();
+  } catch (e) { /* silent */ }
+}
+
+/* =====================================================================
+ *  ROOM PICKER (bottom sheet)
+ * ===================================================================== */
+let pick = null;
+function openPicker() {
+  pick = { unit: settings.unit, room: settings.room, customRoom: settings.customRoom, point: settings.point };
+  renderPicker();
+  const w = $('#sheetWrap'); w.hidden = false;
+  requestAnimationFrame(() => requestAnimationFrame(() => w.classList.add('open')));
+}
+function closePicker() {
+  const w = $('#sheetWrap'); w.classList.remove('open');
+  setTimeout(() => { w.hidden = true; }, 350);
+}
+function renderPicker() {
+  const recent = load(LS.recent, []);
+  const u = UNITS.find((x) => x.unit === pick.unit);
+  const canSave = pick.unit && pick.room && (pick.room !== 'อื่นๆ' || (pick.customRoom || '').trim());
+  $('#sheet').innerHTML = `
+    <div class="grab"></div>
+    <h3>เลือกห้องตรวจ <button class="icon-btn" data-act="close-picker" style="width:38px;height:38px">${ic('close')}</button></h3>
+    <div class="muted" style="font-size:13px">ระบบจะจำห้องนี้ไว้ ครั้งต่อไปไม่ต้องเลือกใหม่ 💜</div>
+    ${recent.length ? `<div class="sec"><div class="sec-t">ใช้ล่าสุด</div><div class="chips">${recent.map((r, i) => `<button class="chip ${r.unit === pick.unit && r.room === pick.room && (r.room !== 'อื่นๆ' || r.customRoom === pick.customRoom) ? 'on' : ''}" data-act="pk-recent" data-i="${i}">${esc(r.room === 'อื่นๆ' ? r.customRoom : r.room)}<small>${esc(r.unit)}</small></button>`).join('')}</div></div>` : ''}
+    <div class="sec"><div class="sec-t">1 · หน่วย</div><div class="unit-grid">${UNITS.map((x) => `<button class="chip ${x.unit === pick.unit ? 'on' : ''}" data-act="pk-unit" data-v="${esc(x.unit)}">${esc(x.unit)}</button>`).join('')}</div></div>
+    <div class="sec"><div class="sec-t">2 · ห้องตรวจ</div>${u ? `<div class="chips">${u.rooms.map((r) => `<button class="chip ${r === pick.room ? 'on' : ''}" data-act="pk-room" data-v="${esc(r)}">${esc(r)}</button>`).join('')}</div>` : '<div class="muted" style="font-size:13px">เลือกหน่วยก่อนนะ</div>'}
+      ${pick.room === 'อื่นๆ' ? `<input class="inp" id="pkCustom" style="margin-top:10px" placeholder="พิมพ์ชื่อห้องตรวจ / จุดบริการ" value="${esc(pick.customRoom || '')}">` : ''}
+    </div>
+    <div class="sec"><div class="sec-t">3 · จุดบริการที่ใช้ประเมิน</div><div class="seg">${POINTS.map((p) => `<button class="${p === pick.point ? 'on' : ''}" data-act="pk-point" data-v="${esc(p)}">${esc(p)}</button>`).join('')}</div></div>
+    <button class="btn btn-primary btn-block" style="margin-top:20px;padding:16px;font-size:16px" data-act="pk-save" ${canSave ? '' : 'disabled'}>${ic('check')} ใช้ห้องนี้</button>`;
+  const ci = $('#pkCustom');
+  if (ci) ci.addEventListener('input', (e) => { pick.customRoom = e.target.value; $('[data-act="pk-save"]').disabled = !e.target.value.trim(); });
+}
+function savePicker() {
+  Object.assign(settings, pick); saveSettings();
+  const rec = load(LS.recent, []).filter((r) => !(r.unit === pick.unit && r.room === pick.room && r.customRoom === pick.customRoom));
+  rec.unshift({ unit: pick.unit, room: pick.room, customRoom: pick.customRoom });
+  save(LS.recent, rec.slice(0, 5));
+  dash.unit = settings.unit; dash.room = currentRoom();
+  closePicker(); homeStats = null;
+  toast(`${ic('check')} ตั้งค่าเป็น <b>${esc(currentRoom())}</b> แล้ว`, 'ok');
+  renderChrome(); if (screen === 'home') renderHome(); if (screen === 'dash') renderDash();
+  refreshHome();
+}
+
+/* =====================================================================
+ *  SURVEY
+ * ===================================================================== */
+function startSurvey() {
+  if (!settings.room) { openPicker(); toast('เลือกห้องตรวจก่อนเริ่มประเมินนะคะ'); return; }
+  survey = { step: 0, ans: {} };
+  tone([523, 784], 0.1, 'triangle', 0.06, 0.1); buzz();
+  go('survey');
+}
+function bumpIdle() {
+  clearTimeout(idleT);
+  if (screen === 'survey') idleT = setTimeout(() => { survey = null; go('home'); toast('หมดเวลา กลับหน้าแรกอัตโนมัติ'); }, IDLE_RESET_MS);
+}
+function renderSurvey(dir) {
+  const s = STEPS[survey.step]; const room = currentRoom();
+  const prevW = (survey.prevStep == null ? survey.step : survey.prevStep) / 4 * 100;
+  let body = '';
+  if (s === 'gender') {
+    body = `<h2 class="q-title">ผู้ป่วยเป็น<em>เพศ</em>อะไรคะ?</h2>
+    <div class="opts">
+      ${GENDERS.slice(0, 2).map((g) => optBtn('gender', g.v, `${avatarSVG(g.v)}<span class="t1">${g.v}</span>`)).join('')}
+      ${optBtn('gender', 'ไม่ระบุ', `${avatarSVG('x')}<span><span class="t1">ไม่ประสงค์ระบุ</span></span>`, 'wide small')}
+    </div>`;
+  } else if (s === 'age') {
+    body = `<h2 class="q-title">ผู้ป่วย<em>อายุ</em>เท่าไหร่คะ?</h2>
+    <div class="opts">${AGES.map((a, i) => optBtn('age', a.v, `<span class="num">${a.big}<small>ปี</small></span><span class="t2">${a.sub}</span><span class="dotrow">${AGES.map((_, j) => `<i class="${j <= i ? 'f' : ''}"></i>`).join('')}</span>`, 'age-opt' + (i === AGES.length - 1 ? ' span2' : ''), `--c:${a.color}`)).join('')}</div>`;
+  } else if (s === 'right') {
+    body = `<h2 class="q-title">วันนี้ใช้<em>สิทธิ์การรักษา</em>อะไรคะ?</h2>
+    <div class="opts">${RIGHTS.map((r) => optBtn('right', r.v, `${rightIcon(r.icon)}<span class="t1">${r.v}</span><span class="t2">${r.sub}</span>`, 'right-opt')).join('')}</div>`;
+  } else {
+    const sc = survey.ans.score;
+    body = `<h2 class="q-title" style="text-align:center">วันนี้พึงพอใจบริการ<br>ของ <em>${esc(room)}</em> แค่ไหนคะ?</h2>
+    <div class="rate-stage">
+      <div class="rate-hero" id="rateHero">${sc ? faceSVG(sc) : '<div class="ph">?</div>'}</div>
+      <div class="rate-label" id="rateLabel">${sc ? `<span style="--c:${SCORES[sc].c2}">${SCORES[sc].label}</span>` : '<span class="idle">แตะหน้าที่ตรงกับความรู้สึกของคุณ 👇</span>'}</div>
+      <div class="faces ${sc ? 'has' : ''}" id="faces">${[1, 2, 3, 4, 5].map((n) => `<button class="fbtn ${sc === n ? 'sel' : ''}" data-act="score" data-v="${n}" style="--c:${SCORES[n].c2}" aria-label="${n} คะแนน ${SCORES[n].label}">${faceSVG(n)}<span class="n">${n}</span></button>`).join('')}</div>
+      <div class="scale-cap"><span>😣 น้อยที่สุด</span><span>มากที่สุด 😍</span></div>
+      <button class="btn btn-primary submit" data-act="submit" id="submitBtn" ${sc ? '' : 'disabled'}>${ic('heart')} ส่งความรู้สึก</button>
+    </div>`;
+  }
+  $('#view').innerHTML = `
+  <section class="survey">
+    <div class="q-head">
+      <button class="icon-btn" data-act="back" aria-label="ย้อนกลับ">${ic('back')}</button>
+      <div class="progress"><i id="prog" style="width:${prevW}%"></i></div>
+      <button class="icon-btn" data-act="quit" aria-label="ยกเลิก">${ic('close')}</button>
+    </div>
+    <div class="q-meta"><span>ข้อ <b>${survey.step + 1}</b> จาก 4</span><span>${esc(room)}</span></div>
+    <div class="q-body ${dir > 0 ? 'in-r' : 'in-l'}">${body}</div>
+  </section>`;
+  requestAnimationFrame(() => requestAnimationFrame(() => { const p = $('#prog'); if (p) p.style.width = ((survey.step + 1) / 4 * 100) + '%'; }));
+  survey.prevStep = survey.step + 1;
+  bumpIdle();
+}
+function optBtn(k, v, inner, cls = '', style = '') {
+  const sel = survey.ans[k] === v;
+  return `<button class="opt ${cls} ${sel ? 'sel' : ''}" data-act="ans" data-k="${k}" data-v="${esc(v)}" style="${style}${cls.includes('span2') ? ';grid-column:1/-1' : ''}"><span class="tick">${ic('check')}</span>${inner}</button>`;
+}
+function answer(btn) {
+  const k = btn.dataset.k, v = btn.dataset.v;
+  survey.ans[k] = v;
+  $$('.opt').forEach((o) => o.classList.toggle('sel', o === btn));
+  tone([600 + survey.step * 90], 0.08, 'triangle', 0.05, 0.12); buzz(10);
+  bumpIdle();
+  setTimeout(() => { if (screen === 'survey' && survey && STEPS[survey.step] === k) { survey.step++; renderSurvey(1); } }, 280);
+}
+function pickScore(n) {
+  survey.ans.score = n;
+  $('#rateHero').innerHTML = faceSVG(n, 'swap');
+  $('#rateLabel').innerHTML = `<span style="--c:${SCORES[n].c2}">${SCORES[n].label}</span>`;
+  $('#faces').classList.add('has');
+  $$('.fbtn').forEach((b) => b.classList.toggle('sel', +b.dataset.v === n));
+  $('#submitBtn').disabled = false;
+  tone([440 + n * 110], 0.1, 'sine', 0.05, 0.14); buzz(14);
+  bumpIdle();
+}
+function submitSurvey() {
+  const a = survey.ans; if (!a.score) return;
+  const now = new Date();
+  const rec = { id: uid(), ts: now.toISOString(), date: ymd(now), time: hm(now), unit: settings.unit, room: currentRoom(), point: settings.point, gender: a.gender || 'ไม่ระบุ', age: a.age || '', right: a.right || '', score: a.score, device: settings.device };
+  const q = load(LS.queue, []); q.push(rec); save(LS.queue, q);
+  // optimistic local stats
+  homeStats = computeStats([...((homeStats && homeStats._list) || []), rec]);
+  survey = null;
+  go('thanks', rec);
+  flushQueue().then(() => {
+    refreshHome();
+    if (bc) try { bc.postMessage({ type: 'submitted', id: rec.id }); } catch (e) {}
+  });
+}
+
+/* =====================================================================
+ *  THANKS
+ * ===================================================================== */
+function renderThanks(rec) {
+  const s = rec.score;
+  const msg = s >= 4 ? ['ขอบคุณมากค่ะ 💖', 'ดีใจที่ได้ดูแลคุณวันนี้<br>ขอให้สุขภาพแข็งแรงนะคะ']
+    : s === 3 ? ['ขอบคุณค่ะ 🌼', 'เราจะพัฒนาให้ดียิ่งขึ้น<br>เพื่อให้คุณประทับใจในครั้งหน้า']
+    : ['ขออภัยในความไม่สะดวกค่ะ 🙏', 'ขอบคุณที่บอกเรา<br>เราจะนำไปปรับปรุงให้ดีขึ้นแน่นอนค่ะ'];
+  $('#view').innerHTML = `
+  <section class="thanks" data-act="thanks-done">
+    <div class="big">${faceSVG(s)}</div>
+    <h2>${msg[0]}</h2>
+    <p>${msg[1]}</p>
+    <div class="ring" style="--d:${THANKS_MS}ms"><svg viewBox="0 0 62 62"><circle cx="31" cy="31" r="28" stroke="rgba(124,108,255,.12)" stroke-width="5" fill="none"/><circle class="p" cx="31" cy="31" r="28" stroke="url(#rg)" stroke-width="5" fill="none" stroke-linecap="round"/><defs><linearGradient id="rg"><stop offset="0" stop-color="#ff7eb3"/><stop offset="1" stop-color="#8b6cff"/></linearGradient></defs></svg><span id="cd">${Math.round(THANKS_MS / 1000)}</span></div>
+    <div class="tap-hint">กรุณาส่งโทรศัพท์คืนเจ้าหน้าที่ · แตะเพื่อกลับหน้าแรก</div>
+  </section>`;
+  if (s >= 4) { tone([523, 659, 784, 1047], 0.2, 'sine', 0.09, 0.14); confetti(54); buzz([20, 40, 20]); }
+  else if (s === 3) { tone([523, 659], 0.18, 'sine', 0.1, 0.12); confetti(18, ['#ffcf3a', '#ffa94d', '#8b6cff']); }
+  else tone([440, 392], 0.22, 'sine', 0.12, 0.1);
+  let left = Math.round(THANKS_MS / 1000);
+  const tick = () => { left--; const el = $('#cd'); if (el && left >= 0) el.textContent = left; if (left > 0 && screen === 'thanks') thanksT = setTimeout(tick, 1000); else if (screen === 'thanks') go('home'); };
+  thanksT = setTimeout(tick, 1000);
+}
+
+/* =====================================================================
+ *  STATS
+ * ===================================================================== */
+function computeStats(list) {
+  const st = { n: 0, sum: 0, dist: [0, 0, 0, 0, 0, 0], g: {}, a: {}, r: {}, room: {}, _list: list };
+  const add = (m, k, s) => { k = k || 'ไม่ระบุ'; if (!m[k]) m[k] = { n: 0, sum: 0 }; m[k].n++; m[k].sum += s; };
+  for (const x of list) {
+    const s = +x.score; if (!(s >= 1 && s <= 5)) continue;
+    st.n++; st.sum += s; st.dist[s]++;
+    add(st.g, x.gender, s); add(st.a, x.age, s); add(st.r, x.right, s); add(st.room, `${x.unit || '-'}||${x.room || '-'}`, s);
+  }
+  st.avg = st.n ? st.sum / st.n : null;
+  st.top2 = st.n ? ((st.dist[4] + st.dist[5]) / st.n) * 100 : null;
+  st.low2 = st.n ? ((st.dist[1] + st.dist[2]) / st.n) * 100 : null;
+  st.pct = st.n ? (st.avg / 5) * 100 : null;
+  return st;
+}
+
+/* =====================================================================
+ *  DASHBOARD
+ * ===================================================================== */
+const PERIODS = [['today', 'วันนี้'], ['7d', '7 วัน'], ['30d', '30 วัน'], ['month', 'เดือนนี้'], ['fy', 'ปีงบฯ'], ['all', 'ทั้งหมด'], ['custom', 'กำหนดเอง']];
+function periodRange(p) {
+  const t = todayStr(); const d = new Date();
+  if (p === 'today') return [t, t];
+  if (p === '7d') return [addDays(t, -6), t];
+  if (p === '30d') return [addDays(t, -29), t];
+  if (p === 'month') return [ymd(new Date(d.getFullYear(), d.getMonth(), 1)), t];
+  if (p === 'fy') { const y = d.getMonth() >= 9 ? d.getFullYear() : d.getFullYear() - 1; return [`${y}-10-01`, t]; }
+  if (p === 'all') return ['', ''];
+  return [dash.from || t, dash.to || t];
+}
+function periodLabel() {
+  const [f, t] = periodRange(dash.period);
+  if (dash.period === 'all') return 'ข้อมูลทั้งหมด';
+  if (f === t) return thDate(f);
+  return `${thDate(f)} – ${thDate(t)}`;
+}
+function scopeLabel() {
+  if (dash.unit === 'ALL') return 'ภาพรวมทุกหน่วย';
+  if (dash.room === 'ALL') return dash.unit;
+  return `${dash.unit} › ${dash.room}`;
+}
+function renderDash() {
+  const units = UNITS.map((u) => u.unit);
+  const u = UNITS.find((x) => x.unit === dash.unit);
+  const roomsOfUnit = u ? [...u.rooms.filter((r) => r !== 'อื่นๆ'), ...new Set(dashRecords.filter((r) => r.unit === dash.unit && !u.rooms.includes(r.room)).map((r) => r.room))] : [];
+  if (dash.room !== 'ALL' && u && !roomsOfUnit.includes(dash.room)) roomsOfUnit.push(dash.room);
+  const isMine = dash.unit === settings.unit && dash.room === currentRoom();
+  $('#view').innerHTML = `
+  <section class="dash enter">
+    <div class="dash-head">
+      <div><h2>แดชบอร์ด</h2><div class="sub" id="dashSub">${esc(scopeLabel())} · ${periodLabel()}</div></div>
+      <button class="live-pill" id="livePill" data-act="refresh" title="รีเฟรช"><i></i>LIVE <span id="lastUpd">${lastUpdated ? hm(lastUpdated) : '…'}</span></button>
+    </div>
+    ${Backend.mode === 'local' && hasDemo() ? `<div class="banner">${ic('info')}<div>กำลังแสดง <b>ข้อมูลตัวอย่าง</b> (ยังไม่เชื่อม Google Sheet) <button data-act="nav" data-to="settings">ตั้งค่า / ล้างข้อมูลตัวอย่าง</button></div></div>` : ''}
+    <div class="card filters">
+      <div class="chips scroll">${PERIODS.map(([k, l]) => `<button class="chip ${dash.period === k ? 'on' : ''}" data-act="d-period" data-v="${k}">${l}</button>`).join('')}</div>
+      <div>
+        ${dash.period === 'custom' ? `<div class="range-row" style="margin-bottom:8px"><input type="date" class="inp" id="dFrom" value="${dash.from}"><input type="date" class="inp" id="dTo" value="${dash.to}"></div>` : ''}
+        <div class="sel-row">
+          <select class="inp" id="dUnit"><option value="ALL">ทุกหน่วย</option>${units.map((x) => `<option ${x === dash.unit ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>
+          <select class="inp" id="dRoom" ${dash.unit === 'ALL' ? 'disabled' : ''}><option value="ALL">ทุกห้อง</option>${roomsOfUnit.map((x) => `<option ${x === dash.room ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>
+          <button class="chip ${isMine ? 'on' : ''}" data-act="d-mine" style="border-radius:16px" ${settings.room ? '' : 'disabled'}>${ic('pin')}</button>
+        </div>
+      </div>
+    </div>
+    <div class="dash-grid" id="dashBody">${dashRecords.length || lastUpdated ? '' : '<div class="skel s5"></div><div class="skel s7"></div><div class="skel s4"></div><div class="skel s4"></div><div class="skel s4"></div>'}</div>
+    <div class="dash-actions">
+      ${settings.sheetUrl ? `<a class="btn btn-soft btn-sm" href="${esc(settings.sheetUrl)}" target="_blank" rel="noopener" style="text-decoration:none">${ic('sheet')} เปิด Google Sheet</a>` : ''}
+      <button class="btn btn-soft btn-sm" data-act="csv">${ic('download')} ดาวน์โหลด CSV</button>
+    </div>
+    <div class="foot">Happinometer · อัปเดตอัตโนมัติทุก ${POLL_DASH_MS / 1000} วินาที</div>
+  </section>`;
+  if (dashRecords.length || lastUpdated) drawDash(false);
+  loadDash(false);
+}
+async function loadDash(silent) {
+  const [f, t] = periodRange(dash.period);
+  const tok = ++fetchToken;
+  const pill = $('#livePill'); if (pill) pill.classList.add('loading');
+  try {
+    const recs = await fetchRecords(f, t);
+    if (tok !== fetchToken || screen !== 'dash') return;
+    const ids = new Set(recs.map((r) => r.id));
+    let fresh = [];
+    if (dashKnownIds && silent) fresh = recs.filter((r) => !dashKnownIds.has(r.id));
+    dashKnownIds = ids; dashRecords = recs; lastUpdated = new Date();
+    drawDash(fresh.length ? new Set(fresh.map((r) => r.id)) : null);
+    if (fresh.length) { toast(`${ic('sparkle')} มีผลประเมินใหม่ <b>+${fresh.length}</b>`, 'live'); tone([880, 1175], 0.08, 'sine', 0.06, 0.06); }
+  } catch (e) {
+    if (!silent) toast('โหลดข้อมูลไม่สำเร็จ: ' + esc(e.message || e), 'err', 3600);
+  } finally {
+    const p = $('#livePill'); if (p) p.classList.remove('loading');
+    const lu = $('#lastUpd'); if (lu && lastUpdated) lu.textContent = lastUpdated.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+}
+function filtered() {
+  return dashRecords.filter((r) => (dash.unit === 'ALL' || r.unit === dash.unit) && (dash.room === 'ALL' || r.room === dash.room));
+}
+function drawDash(freshIds) {
+  const body = $('#dashBody'); if (!body) return;
+  const list = filtered(); const st = computeStats(list);
+  $('#dashSub').textContent = `${scopeLabel()} · ${periodLabel()}`;
+  if (!st.n) {
+    body.innerHTML = `<div class="card s12 empty">${faceSVG(3)}ยังไม่มีผลประเมินในช่วงนี้<br><span style="font-size:12.5px">ลองเปลี่ยนช่วงเวลา หรือเลือก “ทุกหน่วย”</span></div>`;
+    return;
+  }
+  const lvlN = Math.min(5, Math.max(1, Math.round(st.avg)));
+  const gItems = GENDERS.map((g) => ({ label: g.v, color: g.color, ...(st.g[g.v] || { n: 0, sum: 0 }) })).filter((x) => x.n);
+  const rItems = RIGHTS.map((r) => ({ label: r.v, color: r.color, ...(st.r[r.v] || { n: 0, sum: 0 }) }));
+  const extraR = Object.keys(st.r).filter((k) => !RIGHTS.some((r) => r.v === k)).map((k) => ({ label: k, color: '#c9c3e4', ...st.r[k] }));
+  const aItems = AGES.map((a) => ({ label: a.v, color: a.color, ...(st.a[a.v] || { n: 0, sum: 0 }) }));
+  const maxA = Math.max(1, ...aItems.map((x) => x.n));
+  const rooms = Object.entries(st.room).map(([k, v]) => { const [unit, room] = k.split('||'); return { unit, room, n: v.n, avg: v.sum / v.n }; }).sort((a, b) => b.n - a.n || b.avg - a.avg);
+  const roomsShown = dash.showAllRooms ? rooms : rooms.slice(0, 8);
+  const recent = [...list].sort((a, b) => String(b.ts).localeCompare(String(a.ts))).slice(0, 12);
+
+  body.innerHTML = `
+    <div class="card kpi s5">
+      <div class="card-title"><span class="t">${ic('activity')} คะแนนความพึงพอใจ</span><span class="muted" style="font-size:12px;font-family:var(--font)">เต็ม 5</span></div>
+      <div class="gauge-wrap">${gaugeSVG(st.avg)}</div>
+      <div class="score"><span data-count="${st.avg}" data-dec="2">0</span><small> / 5</small></div>
+      <span class="lvl" style="--c:${SCORES[lvlN].c2}">${SCORES[lvlN].label}</span>
+      <div class="tiles">
+        <div class="tile"><b data-count="${st.n}">0</b><span>จำนวนผู้ประเมิน (N)</span></div>
+        <div class="tile"><b data-count="${st.pct}" data-dec="1" data-suf="%">0</b><span>ร้อยละความพึงพอใจ</span></div>
+        <div class="tile"><b data-count="${st.top2}" data-dec="1" data-suf="%">0</b><span>พอใจระดับ 4–5</span></div>
+      </div>
+    </div>
+    <div class="card s7">
+      <div class="card-title"><span class="t">${ic('smile')} การกระจายคะแนน</span><span class="muted" style="font-size:12px;font-family:var(--font)">ไม่พอใจ (1–2) ${st.low2.toFixed(1)}%</span></div>
+      ${[5, 4, 3, 2, 1].map((s) => { const p = st.dist[s] / st.n * 100; return `<div class="dist-row">${faceSVG(s)}<div><div class="lab"><span>${s} · ${SCORES[s].label}</span></div><div class="bar"><i style="--c:linear-gradient(90deg,${SCORES[s].c1},${SCORES[s].c2})" data-w="${p}"></i></div></div><div class="cnt">${st.dist[s]}<small>${p.toFixed(1)}%</small></div></div>`; }).join('')}
+    </div>
+    <div class="card s4">
+      <div class="card-title"><span class="t">${ic('users')} เพศ</span></div>
+      ${donutBox(gItems, st.n)}
+    </div>
+    <div class="card s4">
+      <div class="card-title"><span class="t">${ic('cake')} ช่วงอายุ</span></div>
+      ${aItems.map((a) => `<div class="hbar"><span class="nm">${esc(a.label)}</span><div class="bar"><i style="--c:${a.color}" data-w="${a.n / maxA * 100}"></i></div><span class="v">${a.n}${a.n ? `<span class="avg-b" style="--c:${scoreColor(a.sum / a.n)}">${(a.sum / a.n).toFixed(2)}</span>` : '<span class="avg-b" style="--c:#e4e0f3">–</span>'}</span></div>`).join('')}
+    </div>
+    <div class="card s4">
+      <div class="card-title"><span class="t">${ic('card')} สิทธิ์การรักษา</span></div>
+      ${donutBox([...rItems, ...extraR].filter((x) => x.n), st.n)}
+    </div>
+    <div class="card s8 trend">
+      <div class="card-title"><span class="t">${ic('trend')} แนวโน้ม</span><span class="muted" style="font-size:12px;font-family:var(--font)">${trendUnitLabel()}</span></div>
+      ${trendSVG(list)}
+      <div class="trend-leg"><span><i style="background:linear-gradient(90deg,#ff7eb3,#8b6cff)"></i>คะแนนเฉลี่ย</span><span><i style="background:#dcd5ff"></i>จำนวนผู้ประเมิน</span></div>
+    </div>
+    <div class="card s4">
+      <div class="card-title"><span class="t">${ic('sparkle')} ล่าสุด</span><span class="muted" style="font-size:12px;font-family:var(--font)">real-time</span></div>
+      <div class="feed">${recent.map((r) => `<div class="fd ${freshIds && freshIds.has(r.id) ? 'new' : ''}">${faceSVG(+r.score)}<div style="min-width:0"><b>${esc(r.room)} · ${r.score} คะแนน</b><span>${esc(r.gender)} · ${esc(r.age)} · ${esc(r.right)}</span></div><time>${timeAgo(r)}</time></div>`).join('')}</div>
+    </div>
+    <div class="card s12">
+      <div class="card-title"><span class="t">${ic('trophy')} แยกรายหน่วย / ห้องตรวจ</span><span class="muted" style="font-size:12px;font-family:var(--font)">แตะเพื่อดูเฉพาะห้อง</span></div>
+      <div class="rank">${roomsShown.map((r, i) => `<button class="rk" data-act="d-room" data-u="${esc(r.unit)}" data-r="${esc(r.room)}"><span class="no">${i + 1}</span><span class="nm"><b>${esc(r.room)}${r.room === currentRoom() && r.unit === settings.unit ? '<span class="me">ห้องนี้</span>' : ''}</b><span>${esc(r.unit)}</span><div class="bar"><i style="--c:${scoreColor(r.avg)}" data-w="${(r.avg / 5) * 100}"></i></div></span><span class="n">${r.n}<small>คน</small></span><span class="avg-b" style="--c:${scoreColor(r.avg)};font-size:13px;padding:5px 8px">${r.avg.toFixed(2)}</span></button>`).join('')}</div>
+      ${rooms.length > 8 ? `<button class="btn btn-ghost btn-sm" style="margin:10px auto 0;display:flex" data-act="d-allrooms">${dash.showAllRooms ? 'ย่อ' : `ดูทั้งหมด ${rooms.length} ห้อง`}</button>` : ''}
+    </div>`;
+  countUp(body); animateNeedles(body);
+  requestAnimationFrame(() => requestAnimationFrame(() => $$('.bar i[data-w]', body).forEach((b) => { b.style.width = Math.max(1.5, +b.dataset.w) + '%'; })));
+}
+function donutBox(items, total) {
+  const C = 2 * Math.PI * 42; let off = 0; const tot = items.reduce((a, b) => a + b.n, 0) || 1;
+  const segs = items.map((it) => { const len = (it.n / tot) * C; const s = `<circle r="42" cx="60" cy="60" fill="none" stroke="${it.color}" stroke-width="17" stroke-dasharray="${Math.max(0, len - (items.length > 1 ? 2 : 0)).toFixed(2)} ${C.toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}"/>`; off += len; return s; }).join('');
+  return `<div class="donut-box"><svg viewBox="0 0 120 120" class="donut"><circle r="42" cx="60" cy="60" fill="none" stroke="#f0ecff" stroke-width="17"/><g class="spin"><g transform="rotate(-90 60 60)">${segs}</g></g><circle r="30" cx="60" cy="60" fill="#fff" opacity=".6"/><text x="60" y="62" class="dn-num">${total}</text><text x="60" y="77" class="dn-sub">คน</text></svg>
+  <div class="legend">${items.map((it) => `<div class="lg"><i style="background:${it.color}"></i><span class="nm">${esc(it.label)}</span><b>${it.n} <small class="muted" style="font-weight:500">${(it.n / tot * 100).toFixed(0)}%</small></b><span class="avg-b" style="--c:${scoreColor(it.sum / it.n)}">${(it.sum / it.n).toFixed(2)}</span></div>`).join('')}</div></div>`;
+}
+function trendUnitLabel() {
+  const [f, t] = periodRange(dash.period);
+  if (f && f === t) return 'รายชั่วโมง';
+  const days = f && t ? Math.round((parseYmd(t) - parseYmd(f)) / 864e5) + 1 : 999;
+  return days > 62 ? 'รายเดือน' : 'รายวัน';
+}
+function trendSVG(list) {
+  let [f, t] = periodRange(dash.period);
+  if (!f) { const ds = list.map((r) => r.date).sort(); f = ds[0] || todayStr(); t = t || todayStr(); }
+  const mode = f === t ? 'hour' : (Math.round((parseYmd(t) - parseYmd(f)) / 864e5) + 1 > 62 ? 'month' : 'day');
+  const buckets = []; const idx = {};
+  if (mode === 'hour') {
+    let hs = list.map((r) => +String(r.time || '0').slice(0, 2)).filter((h) => !isNaN(h));
+    const h0 = Math.min(7, ...hs), h1 = Math.max(17, ...hs);
+    for (let h = h0; h <= h1; h++) { idx[pad(h)] = buckets.length; buckets.push({ k: pad(h), label: `${h}:00`, n: 0, sum: 0 }); }
+    list.forEach((r) => { const b = buckets[idx[String(r.time || '').slice(0, 2)]]; if (b) { b.n++; b.sum += +r.score; } });
+  } else if (mode === 'day') {
+    for (let d = f; d <= t; d = addDays(d, 1)) { const dd = parseYmd(d); idx[d] = buckets.length; buckets.push({ k: d, label: `${dd.getDate()}/${dd.getMonth() + 1}`, n: 0, sum: 0 }); }
+    list.forEach((r) => { const b = buckets[idx[r.date]]; if (b) { b.n++; b.sum += +r.score; } });
+  } else {
+    let d = parseYmd(f); d.setDate(1); const end = parseYmd(t);
+    while (d <= end) { const k = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; idx[k] = buckets.length; buckets.push({ k, label: `${TH_M[d.getMonth()]}${String(d.getFullYear() + 543).slice(2)}`, n: 0, sum: 0 }); d.setMonth(d.getMonth() + 1); }
+    list.forEach((r) => { const b = buckets[idx[String(r.date).slice(0, 7)]]; if (b) { b.n++; b.sum += +r.score; } });
+  }
+  const W = 640, H = 210, pl = 26, pr = 8, pt = 14, pb = 26, iw = W - pl - pr, ih = H - pt - pb;
+  const maxN = Math.max(1, ...buckets.map((b) => b.n)); const step = iw / buckets.length;
+  const y = (v) => pt + ((5 - v) / 4) * ih;
+  let grid = '';
+  for (let v = 1; v <= 5; v++) grid += `<line x1="${pl}" x2="${W - pr}" y1="${y(v)}" y2="${y(v)}" stroke="rgba(124,108,255,.1)" stroke-dasharray="3 5"/><text x="${pl - 8}" y="${y(v) + 3.5}" class="axis" text-anchor="end">${v}</text>`;
+  const bars = buckets.map((b, i) => { const h = (b.n / maxN) * ih * 0.6; return b.n ? `<rect x="${(pl + i * step + step * 0.18).toFixed(1)}" y="${(pt + ih - h).toFixed(1)}" width="${(step * 0.64).toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(5, step * 0.2).toFixed(1)}" fill="url(#tb)"><title>${b.label}: ${b.n} คน</title></rect>` : ''; }).join('');
+  const pts = buckets.map((b, i) => (b.n ? { x: pl + i * step + step / 2, y: y(b.sum / b.n), v: b.sum / b.n, b } : null)).filter(Boolean);
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+  const area = pts.length ? `${line} L${pts[pts.length - 1].x.toFixed(1)} ${pt + ih} L${pts[0].x.toFixed(1)} ${pt + ih} Z` : '';
+  const every = Math.ceil(buckets.length / 9);
+  const xl = buckets.map((b, i) => (i % every === 0 ? `<text x="${(pl + i * step + step / 2).toFixed(1)}" y="${H - 8}" class="axis" text-anchor="middle">${b.label}</text>` : '')).join('');
+  const dots = pts.map((p) => `<circle class="pt" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${pts.length > 40 ? 2.5 : 4.5}" fill="#fff" stroke="${scoreColor(p.v)}" stroke-width="3"><title>${p.b.label}: เฉลี่ย ${p.v.toFixed(2)} (${p.b.n} คน)</title></circle>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}"><defs><linearGradient id="tl" x1="0" x2="1"><stop offset="0" stop-color="#ff7eb3"/><stop offset="1" stop-color="#8b6cff"/></linearGradient><linearGradient id="ta" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a98bff" stop-opacity=".28"/><stop offset="1" stop-color="#a98bff" stop-opacity="0"/></linearGradient><linearGradient id="tb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e3dcff"/><stop offset="1" stop-color="#f1edff"/></linearGradient></defs>${grid}${bars}${area ? `<path d="${area}" fill="url(#ta)"/>` : ''}<path d="${line}" fill="none" stroke="url(#tl)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}${xl}</svg>`;
+}
+function timeAgo(r) {
+  const t = new Date(r.ts); if (isNaN(t)) return esc(r.time || '');
+  const m = Math.floor((Date.now() - t) / 60000);
+  if (m < 1) return 'เมื่อสักครู่';
+  if (m < 60) return `${m} นาทีที่แล้ว`;
+  if (r.date === todayStr()) return r.time || hm(t);
+  return `${thDate(r.date).replace(/ \d{4}$/, '')} ${r.time || ''}`;
+}
+function exportCSV() {
+  const list = filtered().sort((a, b) => String(a.ts).localeCompare(String(b.ts)));
+  if (!list.length) { toast('ไม่มีข้อมูลให้ดาวน์โหลด'); return; }
+  const head = ['วันที่', 'เวลา', 'หน่วย', 'ห้องตรวจ', 'จุดบริการ', 'เพศ', 'ช่วงอายุ', 'สิทธิ์การรักษา', 'คะแนน', 'ระดับ'];
+  const q = (v) => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
+  const rows = list.map((r) => [thDate(r.date), r.time, r.unit, r.room, r.point, r.gender, r.age, r.right, r.score, (SCORES[r.score] || {}).label].map(q).join(','));
+  const blob = new Blob(['\ufeff' + [head.map(q).join(','), ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `Happinometer_${scopeLabel().replace(/[\\/:*?"<>| ›]+/g, '_')}_${todayStr()}.csv`;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+
+/* =====================================================================
+ *  SETTINGS
+ * ===================================================================== */
+function renderSettings() {
+  const mode = Backend.mode; const q = load(LS.queue, []).length;
+  const modeInfo = {
+    gas: ['เชื่อมต่อ Google Sheet แล้ว', 'ทำงานผ่าน Google Apps Script โดยตรง', '#22c58b'],
+    url: ['เชื่อมต่อผ่าน Web App URL', settings.apiUrl, '#7c6cff'],
+    local: ['โหมดออฟไลน์ / สาธิต', 'ข้อมูลเก็บในเครื่องนี้เท่านั้น ยังไม่ส่งขึ้น Google Sheet', '#ffb020'],
+  }[mode];
+  $('#view').innerHTML = `
+  <section class="set-stack enter">
+    <div class="dash-head" style="margin-bottom:0"><div><h2>ตั้งค่า</h2><div class="sub">อุปกรณ์: ${esc(settings.device)}</div></div></div>
+    <div class="card">
+      <div class="card-title"><span class="t">${ic('cloud')} การเชื่อมต่อ Google Sheet</span></div>
+      <div class="status-box"><span class="sb-ic" style="color:${modeInfo[2]}">${ic(mode === 'local' ? 'phone' : 'sheet')}</span><div style="min-width:0"><b>${modeInfo[0]}</b><span>${esc(modeInfo[1])}</span></div></div>
+      ${mode !== 'gas' ? `<div style="margin-top:14px"><label class="lbl">Web App URL (Apps Script)</label><input class="inp" id="sApi" placeholder="https://script.google.com/macros/s/.../exec" value="${esc(settings.apiUrl)}"></div>
+      <p class="help">ดูวิธีสร้าง Web App URL ในไฟล์ README · ถ้าเปิดแอพผ่านลิงก์ Apps Script โดยตรง ระบบจะเชื่อมต่อให้อัตโนมัติ</p>` : ''}
+      <div class="btn-row">
+        ${mode !== 'gas' ? `<button class="btn btn-primary btn-sm" data-act="s-saveapi">${ic('link')} บันทึก URL</button>` : ''}
+        <button class="btn btn-soft btn-sm" data-act="s-test">${ic('activity')} ทดสอบการเชื่อมต่อ</button>
+        ${settings.sheetUrl ? `<a class="btn btn-soft btn-sm" style="text-decoration:none" href="${esc(settings.sheetUrl)}" target="_blank" rel="noopener">${ic('sheet')} เปิด Sheet</a>` : ''}
+      </div>
+      <div class="row" style="margin-top:12px;border-top:1px solid var(--line)"><div class="l"><b>คิวรอส่ง</b><span>${q ? `${q} รายการยังไม่ขึ้น Sheet (ส่งอัตโนมัติเมื่อออนไลน์)` : 'ส่งครบทุกรายการแล้ว ✓'}</span></div>${q ? `<button class="btn btn-ghost btn-sm" data-act="s-flush">ส่งตอนนี้</button>` : ''}</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="t">${ic('phone')} เครื่องนี้</span></div>
+      <div class="row"><div class="l"><b>ห้องที่ใช้ประเมิน</b><span>${settings.room ? `${esc(settings.unit)} › ${esc(currentRoom())} · ${esc(settings.point)}` : 'ยังไม่ได้เลือก'}</span></div><button class="btn btn-ghost btn-sm" data-act="pick-room">เปลี่ยน</button></div>
+      <div class="row"><div class="l" style="flex:1"><b>ชื่ออุปกรณ์ / ผู้ใช้</b><span>บันทึกไว้ในคอลัมน์ “อุปกรณ์” ใน Sheet</span><input class="inp" id="sDevice" style="margin-top:8px" value="${esc(settings.device)}"></div></div>
+      <div class="row"><div class="l"><b>เสียงเอฟเฟกต์</b><span>เสียงน่ารักเวลาแตะ/ส่งคะแนน</span></div><button class="switch ${settings.sound ? 'on' : ''}" data-act="s-toggle" data-k="sound" aria-label="เสียง"></button></div>
+      <div class="row"><div class="l"><b>สั่นตอบสนอง</b><span>สั่นเบาๆ เมื่อแตะ (Android)</span></div><button class="switch ${settings.haptic ? 'on' : ''}" data-act="s-toggle" data-k="haptic" aria-label="สั่น"></button></div>
+    </div>
+    ${mode === 'local' ? `<div class="card">
+      <div class="card-title"><span class="t">${ic('sparkle')} ข้อมูลตัวอย่าง</span></div>
+      <p class="help" style="margin-top:0">ใช้ทดลองดูแดชบอร์ดก่อนเชื่อม Google Sheet — ข้อมูลตัวอย่างจะไม่ถูกส่งขึ้น Sheet</p>
+      <div class="btn-row">${hasDemo() ? `<button class="btn btn-danger btn-sm" data-act="s-cleardemo">${ic('trash')} ล้างข้อมูลตัวอย่าง</button>` : `<button class="btn btn-soft btn-sm" data-act="s-seed">${ic('sparkle')} สร้างข้อมูลตัวอย่าง</button>`}</div>
+    </div>` : ''}
+    <div class="card" style="text-align:center">
+      <div style="width:64px;margin:0 auto">${faceSVG(5)}</div>
+      <div class="wordmark" style="font-size:20px;margin-top:6px">Happinometer</div>
+      <div class="muted" style="font-size:12.5px;margin-top:4px">แบบประเมินความพึงพอใจผู้ป่วย · v1.0<br>${UNITS.length} หน่วย · ${UNITS.reduce((a, u) => a + u.rooms.length, 0)} ห้องตรวจ/จุดบริการ</div>
+    </div>
+  </section>`;
+  const dv = $('#sDevice'); if (dv) dv.addEventListener('change', (e) => { settings.device = e.target.value.trim() || settings.device; saveSettings(); toast('บันทึกชื่ออุปกรณ์แล้ว', 'ok'); });
+}
+async function testConnection() {
+  try {
+    const r = await Backend.info();
+    if (r && r.ok) {
+      if (r.sheetUrl) { settings.sheetUrl = r.sheetUrl; saveSettings(); }
+      toast(r.local ? 'โหมดออฟไลน์ทำงานปกติ' : `${ic('check')} เชื่อมต่อสำเร็จ · ${esc(r.sheetName || 'Google Sheet')}`, 'ok', 3200);
+      setSync(); if (screen === 'settings') renderSettings();
+    } else throw new Error((r && r.error) || 'ไม่ตอบสนอง');
+  } catch (e) { toast('เชื่อมต่อไม่สำเร็จ: ' + esc(e.message || e), 'err', 4200); }
+}
+
+/* =====================================================================
+ *  events
+ * ===================================================================== */
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const a = el.dataset.act;
+  switch (a) {
+    case 'nav': go(el.dataset.to); break;
+    case 'pick-room': openPicker(); break;
+    case 'close-picker': closePicker(); break;
+    case 'pk-recent': { const r = load(LS.recent, [])[+el.dataset.i]; if (r) { Object.assign(pick, r); renderPicker(); } break; }
+    case 'pk-unit': { pick.unit = el.dataset.v; const u = UNITS.find((x) => x.unit === pick.unit); pick.room = u && u.rooms.length === 1 ? u.rooms[0] : ''; renderPicker(); break; }
+    case 'pk-room': pick.room = el.dataset.v; renderPicker(); break;
+    case 'pk-point': pick.point = el.dataset.v; renderPicker(); break;
+    case 'pk-save': savePicker(); break;
+    case 'start': startSurvey(); break;
+    case 'ans': answer(el); break;
+    case 'score': pickScore(+el.dataset.v); break;
+    case 'submit': submitSurvey(); break;
+    case 'back': if (survey.step > 0) { survey.prevStep = survey.step + 1; survey.step--; renderSurvey(-1); } else { survey = null; go('home'); } break;
+    case 'quit': survey = null; go('home'); break;
+    case 'thanks-done': go('home'); break;
+    case 'refresh': loadDash(false); break;
+    case 'd-period': {
+      dash.period = el.dataset.v;
+      if (dash.period === 'custom' && !dash.from) { dash.from = addDays(todayStr(), -6); dash.to = todayStr(); }
+      dashKnownIds = null; renderDash(); break;
+    }
+    case 'd-mine': dash.unit = settings.unit; dash.room = currentRoom(); renderDash(); break;
+    case 'd-room': dash.unit = el.dataset.u; dash.room = el.dataset.r; renderDash(); window.scrollTo({ top: 0, behavior: 'smooth' }); break;
+    case 'd-allrooms': dash.showAllRooms = !dash.showAllRooms; drawDash(null); break;
+    case 'csv': exportCSV(); break;
+    case 's-saveapi': { const v = ($('#sApi').value || '').trim(); settings.apiUrl = v; settings.manualOffline = !v; saveSettings(); dashRecords = []; lastUpdated = null; dashKnownIds = null; homeStats = null; toast(v ? 'บันทึก URL แล้ว กำลังทดสอบ…' : 'ล้าง URL แล้ว (โหมดออฟไลน์)', 'ok'); renderSettings(); renderChrome(); if (v) testConnection().then(() => { flushQueue(); refreshHome(); }); break; }
+    case 's-test': testConnection(); break;
+    case 's-flush': flushQueue().then(() => renderSettings()); break;
+    case 's-toggle': settings[el.dataset.k] = !settings[el.dataset.k]; saveSettings(); el.classList.toggle('on', settings[el.dataset.k]); if (el.dataset.k === 'sound' && settings.sound) tone([660, 880], 0.1); if (el.dataset.k === 'haptic') buzz(30); break;
+    case 's-cleardemo': save(LS.local, load(LS.local, []).filter((x) => !x.isDemo)); settings.noDemo = true; saveSettings(); dashRecords = []; lastUpdated = null; homeStats = null; toast('ล้างข้อมูลตัวอย่างแล้ว', 'ok'); renderSettings(); refreshHome(); break;
+    case 's-seed': seedDemo(); settings.noDemo = false; saveSettings(); homeStats = null; toast('สร้างข้อมูลตัวอย่างแล้ว ✨', 'ok'); renderSettings(); refreshHome(); break;
+  }
+});
+document.addEventListener('change', (e) => {
+  const id = e.target.id;
+  if (id === 'dUnit') { dash.unit = e.target.value; dash.room = 'ALL'; renderDash(); }
+  if (id === 'dRoom') { dash.room = e.target.value; drawDash(null); renderDashFiltersOnly(); }
+  if (id === 'dFrom' || id === 'dTo') { dash.from = $('#dFrom').value; dash.to = $('#dTo').value; if (dash.from > dash.to) [dash.from, dash.to] = [dash.to, dash.from]; dashKnownIds = null; renderDash(); }
+});
+function renderDashFiltersOnly() { const mine = $('[data-act="d-mine"]'); if (mine) mine.classList.toggle('on', dash.unit === settings.unit && dash.room === currentRoom()); }
+$('#sheetWrap').addEventListener('click', (e) => { if (e.target.id === 'sheetWrap') closePicker(); });
+['pointerdown', 'keydown'].forEach((ev) => document.addEventListener(ev, () => { if (screen === 'survey') bumpIdle(); }, { passive: true }));
+
+setInterval(() => { if (document.hidden) return; if (screen === 'dash') loadDash(true); }, POLL_DASH_MS);
+setInterval(() => { if (document.hidden) return; if (screen === 'home') refreshHome(); }, POLL_HOME_MS);
+setInterval(() => { if (load(LS.queue, []).length) flushQueue(); }, 20000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { if (screen === 'dash') loadDash(true); if (screen === 'home') refreshHome(); flushQueue(); } });
+
+/* =====================================================================
+ *  boot
+ * ===================================================================== */
+(function boot() {
+  if (Backend.mode === 'local' && !settings.noDemo && !load(LS.local, []).length) seedDemo();
+  renderChrome();
+  go('home');
+  if (!settings.room) setTimeout(openPicker, 450);
+  refreshHome();
+  flushQueue();
+  if (Backend.mode !== 'local') Backend.info().then((r) => { if (r && r.sheetUrl) { settings.sheetUrl = r.sheetUrl; saveSettings(); } setSync(); }).catch(() => setSync('error'));
+})();
+})();
+</script>
+</body>
+</html>

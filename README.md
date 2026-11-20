@@ -67,3 +67,7 @@ python -m http.server 8765
 ```
 
 แล้วเปิด `http://localhost:8765` ในเบราว์เซอร์
+
+---
+
+*conceived, designed, and Brought to Life by **RN.Patipon Wiyo***

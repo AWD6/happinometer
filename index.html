@@ -353,6 +353,8 @@ body.kiosk .tabbar{transform:translate(-50%,140%);opacity:0;pointer-events:none}
 .help{font-size:12.5px;color:var(--muted);line-height:1.6;margin:8px 2px 0}
 .btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .foot{text-align:center;font-size:12px;color:var(--muted);margin:22px 0 4px}
+.credit{font-size:11.5px;color:var(--muted);letter-spacing:.15px;line-height:1.6}
+.credit b{color:var(--ink2);font-weight:600}
 </style>
 </head>
 <body>
@@ -794,6 +796,7 @@ function renderHome() {
       <div class="card-title"><span class="t">${ic('sparkle')} ความรู้สึกวันนี้ · ${room ? esc(room) : '-'}</span><span class="muted" style="font-size:12px;font-family:var(--font)">อัปเดตอัตโนมัติ</span></div>
       <div class="today-faces">${[1, 2, 3, 4, 5].map((s) => `<div class="tf">${faceSVG(s)}<b>${st ? st.dist[s] : 0}</b></div>`).join('')}</div>
     </div>
+    <div class="foot credit">conceived, designed, and Brought to Life by <b>RN.Patipon Wiyo</b></div>
   </section>`;
   countUp($('#view')); animateNeedles($('#view'));
   renderChrome();
@@ -1040,7 +1043,7 @@ function renderDash() {
       ${settings.sheetUrl ? `<a class="btn btn-soft btn-sm" href="${esc(settings.sheetUrl)}" target="_blank" rel="noopener" style="text-decoration:none">${ic('sheet')} เปิด Google Sheet</a>` : ''}
       <button class="btn btn-soft btn-sm" data-act="csv">${ic('download')} ดาวน์โหลด CSV</button>
     </div>
-    <div class="foot">Happinometer · อัปเดตอัตโนมัติทุก ${POLL_DASH_MS / 1000} วินาที</div>
+    <div class="foot">Happinometer · อัปเดตอัตโนมัติทุก ${POLL_DASH_MS / 1000} วินาที<div class="credit" style="margin-top:4px">conceived, designed, and Brought to Life by <b>RN.Patipon Wiyo</b></div></div>
   </section>`;
   if (dashRecords.length || lastUpdated) drawDash(false);
   loadDash(false);
@@ -1236,6 +1239,7 @@ function renderSettings() {
       <div style="width:64px;margin:0 auto">${faceSVG(5)}</div>
       <div class="wordmark" style="font-size:20px;margin-top:6px">Happinometer</div>
       <div class="muted" style="font-size:12.5px;margin-top:4px">แบบประเมินความพึงพอใจผู้ป่วย · v1.0<br>${UNITS.length} หน่วย · ${UNITS.reduce((a, u) => a + u.rooms.length, 0)} ห้องตรวจ</div>
+      <div class="credit" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">conceived, designed, and Brought to Life by <b>RN.Patipon Wiyo</b></div>
     </div>
   </section>`;
   const dv = $('#sDevice'); if (dv) dv.addEventListener('change', (e) => { settings.device = e.target.value.trim() || settings.device; saveSettings(); toast('บันทึกชื่ออุปกรณ์แล้ว', 'ok'); });

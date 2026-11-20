@@ -407,7 +407,6 @@ const UNITS = [
   { unit: 'บริการแพทย์ฉุกเฉิน', rooms: ['EMS', 'Refer', 'Injection Room', 'Dressing Room', 'CSC'] },
   { unit: 'อื่นๆ', rooms: ['อื่นๆ'] },
 ];
-const POINTS = ['จุดรับใบนัด/ให้คำแนะนำ', 'Discharge'];
 const GENDERS = [
   { v: 'ชาย', color: '#5aa9ff' },
   { v: 'หญิง', color: '#ff7eb3' },
@@ -562,7 +561,7 @@ function rightIcon(k) {
  *  state
  * ===================================================================== */
 const settings = Object.assign({
-  unit: '', room: '', customRoom: '', point: POINTS[0],
+  unit: '', room: '', customRoom: '',
   apiUrl: DEFAULT_API_URL, sheetUrl: DEFAULT_SHEET_URL, device: '', sound: true, haptic: true,
 }, load(LS.settings, {}));
 if (!settings.apiUrl && DEFAULT_API_URL && !settings.manualOffline) settings.apiUrl = DEFAULT_API_URL;
@@ -686,7 +685,7 @@ function seedDemo() {
       const score = pickW([1, 2, 3, 4, 5], [2, 3 - b, 10 - b * 4, 34, 48 + b * 12]);
       const mins = 8 * 60 + Math.floor(Math.random() * 8.5 * 60);
       const time = `${pad(Math.floor(mins / 60))}:${pad(mins % 60)}`;
-      out.push({ id: 'demo-' + uid(), ts: new Date(`${date}T${time}:00`).toISOString(), date, time, unit, room, point: pickW(POINTS, [7, 3]), gender: pickW(['ชาย', 'หญิง', 'ไม่ระบุ'], [44, 54, 2]), age: pickW(AGES.map((a) => a.v), [6, 13, 21, 28, 32]), right: pickW(RIGHTS.map((r) => r.v), [44, 22, 20, 14]), score, device: 'demo', isDemo: true });
+      out.push({ id: 'demo-' + uid(), ts: new Date(`${date}T${time}:00`).toISOString(), date, time, unit, room, gender: pickW(['ชาย', 'หญิง', 'ไม่ระบุ'], [44, 54, 2]), age: pickW(AGES.map((a) => a.v), [6, 13, 21, 28, 32]), right: pickW(RIGHTS.map((r) => r.v), [44, 22, 20, 14]), score, device: 'demo', isDemo: true });
     }
   }
   save(LS.local, [...load(LS.local, []).filter((x) => !x.isDemo), ...out]);
@@ -780,7 +779,7 @@ function renderHome() {
       <h1 class="hero-title">วันนี้รู้สึกอย่างไร<br><span class="grad">กับบริการของเรา?</span></h1>
       <button class="room-card" data-act="pick-room">
         <span class="pin">${ic('pin')}</span>
-        <span class="meta"><b>${room ? esc(room) : 'ยังไม่ได้เลือกห้อง'}</b><span>${settings.unit ? esc(settings.unit) + ' · ' : ''}${esc(settings.point)}</span></span>
+        <span class="meta"><b>${room ? esc(room) : 'ยังไม่ได้เลือกห้อง'}</b><span>${settings.unit ? esc(settings.unit) : 'แตะเพื่อเลือกหน่วยและห้องตรวจ'}</span></span>
         <span class="chg">เปลี่ยน ${ic('right')}</span>
       </button>
       <div class="mini-stats">
@@ -815,7 +814,7 @@ async function refreshHome() {
  * ===================================================================== */
 let pick = null;
 function openPicker() {
-  pick = { unit: settings.unit, room: settings.room, customRoom: settings.customRoom, point: settings.point };
+  pick = { unit: settings.unit, room: settings.room, customRoom: settings.customRoom };
   renderPicker();
   const w = $('#sheetWrap'); w.hidden = false;
   requestAnimationFrame(() => requestAnimationFrame(() => w.classList.add('open')));
@@ -835,9 +834,8 @@ function renderPicker() {
     ${recent.length ? `<div class="sec"><div class="sec-t">ใช้ล่าสุด</div><div class="chips">${recent.map((r, i) => `<button class="chip ${r.unit === pick.unit && r.room === pick.room && (r.room !== 'อื่นๆ' || r.customRoom === pick.customRoom) ? 'on' : ''}" data-act="pk-recent" data-i="${i}">${esc(r.room === 'อื่นๆ' ? r.customRoom : r.room)}<small>${esc(r.unit)}</small></button>`).join('')}</div></div>` : ''}
     <div class="sec"><div class="sec-t">1 · หน่วย</div><div class="unit-grid">${UNITS.map((x) => `<button class="chip ${x.unit === pick.unit ? 'on' : ''}" data-act="pk-unit" data-v="${esc(x.unit)}">${esc(x.unit)}</button>`).join('')}</div></div>
     <div class="sec"><div class="sec-t">2 · ห้องตรวจ</div>${u ? `<div class="chips">${u.rooms.map((r) => `<button class="chip ${r === pick.room ? 'on' : ''}" data-act="pk-room" data-v="${esc(r)}">${esc(r)}</button>`).join('')}</div>` : '<div class="muted" style="font-size:13px">เลือกหน่วยก่อนนะ</div>'}
-      ${pick.room === 'อื่นๆ' ? `<input class="inp" id="pkCustom" style="margin-top:10px" placeholder="พิมพ์ชื่อห้องตรวจ / จุดบริการ" value="${esc(pick.customRoom || '')}">` : ''}
+      ${pick.room === 'อื่นๆ' ? `<input class="inp" id="pkCustom" style="margin-top:10px" placeholder="พิมพ์ชื่อห้องตรวจ" value="${esc(pick.customRoom || '')}">` : ''}
     </div>
-    <div class="sec"><div class="sec-t">3 · จุดบริการที่ใช้ประเมิน</div><div class="seg">${POINTS.map((p) => `<button class="${p === pick.point ? 'on' : ''}" data-act="pk-point" data-v="${esc(p)}">${esc(p)}</button>`).join('')}</div></div>
     <button class="btn btn-primary btn-block" style="margin-top:20px;padding:16px;font-size:16px" data-act="pk-save" ${canSave ? '' : 'disabled'}>${ic('check')} ใช้ห้องนี้</button>`;
   const ci = $('#pkCustom');
   if (ci) ci.addEventListener('input', (e) => { pick.customRoom = e.target.value; $('[data-act="pk-save"]').disabled = !e.target.value.trim(); });
@@ -888,10 +886,9 @@ function renderSurvey(dir) {
     body = `<h2 class="q-title" style="text-align:center">วันนี้พึงพอใจบริการ<br>ของ <em>${esc(room)}</em> แค่ไหนคะ?</h2>
     <div class="rate-stage">
       <div class="rate-hero" id="rateHero">${sc ? faceSVG(sc) : '<div class="ph">?</div>'}</div>
-      <div class="rate-label" id="rateLabel">${sc ? `<span style="--c:${SCORES[sc].c2}">${SCORES[sc].label}</span>` : '<span class="idle">แตะหน้าที่ตรงกับความรู้สึกของคุณ 👇</span>'}</div>
+      <div class="rate-label" id="rateLabel">${sc ? `<span style="--c:${SCORES[sc].c2}">${SCORES[sc].label}</span>` : '<span class="idle">แตะหน้าที่ตรงกับความรู้สึกของคุณเพื่อบันทึกทันที 👇</span>'}</div>
       <div class="faces ${sc ? 'has' : ''}" id="faces">${[1, 2, 3, 4, 5].map((n) => `<button class="fbtn ${sc === n ? 'sel' : ''}" data-act="score" data-v="${n}" style="--c:${SCORES[n].c2}" aria-label="${n} คะแนน ${SCORES[n].label}">${faceSVG(n)}<span class="n">${n}</span></button>`).join('')}</div>
       <div class="scale-cap"><span>😣 น้อยที่สุด</span><span>มากที่สุด 😍</span></div>
-      <button class="btn btn-primary submit" data-act="submit" id="submitBtn" ${sc ? '' : 'disabled'}>${ic('heart')} ส่งความรู้สึก</button>
     </div>`;
   }
   $('#view').innerHTML = `
@@ -921,19 +918,21 @@ function answer(btn) {
   setTimeout(() => { if (screen === 'survey' && survey && STEPS[survey.step] === k) { survey.step++; renderSurvey(1); } }, 280);
 }
 function pickScore(n) {
+  if (!survey || survey.submitting) return;
+  survey.submitting = true;
   survey.ans.score = n;
   $('#rateHero').innerHTML = faceSVG(n, 'swap');
   $('#rateLabel').innerHTML = `<span style="--c:${SCORES[n].c2}">${SCORES[n].label}</span>`;
   $('#faces').classList.add('has');
-  $$('.fbtn').forEach((b) => b.classList.toggle('sel', +b.dataset.v === n));
-  $('#submitBtn').disabled = false;
+  $$('.fbtn').forEach((b) => { b.classList.toggle('sel', +b.dataset.v === n); b.disabled = true; });
   tone([440 + n * 110], 0.1, 'sine', 0.05, 0.14); buzz(14);
-  bumpIdle();
+  clearTimeout(idleT);
+  setTimeout(() => { if (screen === 'survey' && survey) submitSurvey(); }, 420);
 }
 function submitSurvey() {
   const a = survey.ans; if (!a.score) return;
   const now = new Date();
-  const rec = { id: uid(), ts: now.toISOString(), date: ymd(now), time: hm(now), unit: settings.unit, room: currentRoom(), point: settings.point, gender: a.gender || 'ไม่ระบุ', age: a.age || '', right: a.right || '', score: a.score, device: settings.device };
+  const rec = { id: uid(), ts: now.toISOString(), date: ymd(now), time: hm(now), unit: settings.unit, room: currentRoom(), point: '', gender: a.gender || 'ไม่ระบุ', age: a.age || '', right: a.right || '', score: a.score, device: settings.device };
   const q = load(LS.queue, []); q.push(rec); save(LS.queue, q);
   // optimistic local stats
   homeStats = computeStats([...((homeStats && homeStats._list) || []), rec]);
@@ -1187,9 +1186,9 @@ function timeAgo(r) {
 function exportCSV() {
   const list = filtered().sort((a, b) => String(a.ts).localeCompare(String(b.ts)));
   if (!list.length) { toast('ไม่มีข้อมูลให้ดาวน์โหลด'); return; }
-  const head = ['วันที่', 'เวลา', 'หน่วย', 'ห้องตรวจ', 'จุดบริการ', 'เพศ', 'ช่วงอายุ', 'สิทธิ์การรักษา', 'คะแนน', 'ระดับ'];
+  const head = ['วันที่', 'เวลา', 'หน่วย', 'ห้องตรวจ', 'เพศ', 'ช่วงอายุ', 'สิทธิ์การรักษา', 'คะแนน', 'ระดับ'];
   const q = (v) => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
-  const rows = list.map((r) => [thDate(r.date), r.time, r.unit, r.room, r.point, r.gender, r.age, r.right, r.score, (SCORES[r.score] || {}).label].map(q).join(','));
+  const rows = list.map((r) => [thDate(r.date), r.time, r.unit, r.room, r.gender, r.age, r.right, r.score, (SCORES[r.score] || {}).label].map(q).join(','));
   const blob = new Blob(['\ufeff' + [head.map(q).join(','), ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
   a.download = `Happinometer_${scopeLabel().replace(/[\\/:*?"<>| ›]+/g, '_')}_${todayStr()}.csv`;
@@ -1223,7 +1222,7 @@ function renderSettings() {
     </div>
     <div class="card">
       <div class="card-title"><span class="t">${ic('phone')} เครื่องนี้</span></div>
-      <div class="row"><div class="l"><b>ห้องที่ใช้ประเมิน</b><span>${settings.room ? `${esc(settings.unit)} › ${esc(currentRoom())} · ${esc(settings.point)}` : 'ยังไม่ได้เลือก'}</span></div><button class="btn btn-ghost btn-sm" data-act="pick-room">เปลี่ยน</button></div>
+      <div class="row"><div class="l"><b>ห้องที่ใช้ประเมิน</b><span>${settings.room ? `${esc(settings.unit)} › ${esc(currentRoom())}` : 'ยังไม่ได้เลือก'}</span></div><button class="btn btn-ghost btn-sm" data-act="pick-room">เปลี่ยน</button></div>
       <div class="row"><div class="l" style="flex:1"><b>ชื่ออุปกรณ์ / ผู้ใช้</b><span>บันทึกไว้ในคอลัมน์ “อุปกรณ์” ใน Sheet</span><input class="inp" id="sDevice" style="margin-top:8px" value="${esc(settings.device)}"></div></div>
       <div class="row"><div class="l"><b>เสียงเอฟเฟกต์</b><span>เสียงน่ารักเวลาแตะ/ส่งคะแนน</span></div><button class="switch ${settings.sound ? 'on' : ''}" data-act="s-toggle" data-k="sound" aria-label="เสียง"></button></div>
       <div class="row"><div class="l"><b>สั่นตอบสนอง</b><span>สั่นเบาๆ เมื่อแตะ (Android)</span></div><button class="switch ${settings.haptic ? 'on' : ''}" data-act="s-toggle" data-k="haptic" aria-label="สั่น"></button></div>
@@ -1236,7 +1235,7 @@ function renderSettings() {
     <div class="card" style="text-align:center">
       <div style="width:64px;margin:0 auto">${faceSVG(5)}</div>
       <div class="wordmark" style="font-size:20px;margin-top:6px">Happinometer</div>
-      <div class="muted" style="font-size:12.5px;margin-top:4px">แบบประเมินความพึงพอใจผู้ป่วย · v1.0<br>${UNITS.length} หน่วย · ${UNITS.reduce((a, u) => a + u.rooms.length, 0)} ห้องตรวจ/จุดบริการ</div>
+      <div class="muted" style="font-size:12.5px;margin-top:4px">แบบประเมินความพึงพอใจผู้ป่วย · v1.0<br>${UNITS.length} หน่วย · ${UNITS.reduce((a, u) => a + u.rooms.length, 0)} ห้องตรวจ</div>
     </div>
   </section>`;
   const dv = $('#sDevice'); if (dv) dv.addEventListener('change', (e) => { settings.device = e.target.value.trim() || settings.device; saveSettings(); toast('บันทึกชื่ออุปกรณ์แล้ว', 'ok'); });
@@ -1265,12 +1264,10 @@ document.addEventListener('click', (e) => {
     case 'pk-recent': { const r = load(LS.recent, [])[+el.dataset.i]; if (r) { Object.assign(pick, r); renderPicker(); } break; }
     case 'pk-unit': { pick.unit = el.dataset.v; const u = UNITS.find((x) => x.unit === pick.unit); pick.room = u && u.rooms.length === 1 ? u.rooms[0] : ''; renderPicker(); break; }
     case 'pk-room': pick.room = el.dataset.v; renderPicker(); break;
-    case 'pk-point': pick.point = el.dataset.v; renderPicker(); break;
     case 'pk-save': savePicker(); break;
     case 'start': startSurvey(); break;
     case 'ans': answer(el); break;
     case 'score': pickScore(+el.dataset.v); break;
-    case 'submit': submitSurvey(); break;
     case 'back': if (survey.step > 0) { survey.prevStep = survey.step + 1; survey.step--; renderSurvey(-1); } else { survey = null; go('home'); } break;
     case 'quit': survey = null; go('home'); break;
     case 'thanks-done': go('home'); break;
